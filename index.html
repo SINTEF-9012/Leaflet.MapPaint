@@ -4,11 +4,31 @@
 <head>
     <meta charset="utf-8" />
     <title>MapPaint</title>
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, target-densitydpi=device-dpi" />
+
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+	<script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+
     <link rel="stylesheet" href="app.css" type="text/css" />
 	<meta name="apple-mobile-web-app-capable" content="yes">
     <script src="app.js"></script>
 </head>
 <body>
+	<div id="map"></div>
     <canvas id="canvas"></canvas>
+
+	<script>
+	var map = L.map("map", {
+	    attributionControl: false,
+	    zoomControl: false
+	}).setView(new L.LatLng(59.901111, 10.752778), 14);
+
+	L.tileLayer('http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.jpg', {
+		subdomains: ['a', 'b', 'c', 'd'],
+		minZoom: 3,
+	    detectRetina: true,
+	    maxNativeZoom: 17
+	}).addTo(map);
+	</script>
 </body>
 </html>
