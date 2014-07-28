@@ -1,4 +1,4 @@
-var MapPaint;
+﻿var MapPaint;
 (function (MapPaint) {
     var SimplePartitionGrid = (function () {
         function SimplePartitionGrid(size, margin) {
@@ -78,7 +78,7 @@ var MapPaint;
         Sketchy.prototype.SetColor = function (r, g, b) {
             var c = 'rgba(' + r + ',' + g + ',' + b;
             this.color = c + ',0.8)';
-            this.colorAlternative = c + ',0.2)';
+            this.colorAlternative = c + ',0.16)';
         };
 
         Sketchy.prototype.EnableEraser = function () {
@@ -137,7 +137,7 @@ var MapPaint;
                 for (var i = 0, l = points.length; i < l; ++i) {
                     var px = points[i].x, py = points[i].y, dx = px - point.x, dy = py - point.y, d = dx * dx + dy * dy;
 
-                    if (d < 4000 && Math.random() > d / 2000) {
+                    if (d < 3000 && Math.random() > d / 1500) {
                         var rl = 0.2 + Math.random() * 0.14, mx = dx * rl, my = dy * rl;
                         ctx.moveTo(point.x + mx, point.y + my);
                         ctx.lineTo(px - mx, py - my);
@@ -181,63 +181,61 @@ function enhanceContext(canvas, context) {
     }
 }
 
-window.onload = function () {
-    var canvas = document.getElementById('canvas');
-    canvas.height = window.innerHeight;
-    canvas.width = window.innerWidth;
+var canvas = document.getElementById('canvas');
+canvas.height = window.innerHeight;
+canvas.width = window.innerWidth;
 
-    var ctx = canvas.getContext('2d');
+var ctx = canvas.getContext('2d');
 
-    enhanceContext(canvas, ctx);
+enhanceContext(canvas, ctx);
 
-    var pencil = new MapPaint.Sketchy(ctx);
+var pencil = new MapPaint.Sketchy(ctx);
 
-    var mousemove = function (e) {
-        pencil.Stroke('mouse', { x: e.clientX, y: e.clientY });
-    };
-
-    canvas.addEventListener('mousedown', function (e) {
-        pencil.Start('mouse', { x: e.clientX, y: e.clientY });
-
-        canvas.addEventListener('mousemove', mousemove);
-
-        e.preventDefault();
-    });
-
-    canvas.addEventListener('mouseup', function (e) {
-        pencil.Stop('mouse');
-
-        canvas.removeEventListener('mousemove', mousemove);
-    });
-
-    var touchmove = function (e) {
-        for (var i = 0, l = e.touches.length; i < l; ++i) {
-            var t = e.touches[i];
-            pencil.Stroke("touch" + t.identifier, { x: t.clientX, y: t.clientY });
-        }
-    };
-
-    canvas.addEventListener('touchstart', function (e) {
-        for (var i = 0, l = e.touches.length; i < l; ++i) {
-            var t = e.touches[i];
-            pencil.Start("touch" + t.identifier, { x: t.clientX, y: t.clientY });
-        }
-
-        canvas.addEventListener('touchmove', touchmove);
-
-        e.preventDefault();
-    });
-
-    var touchend = function (e) {
-        for (var i = 0, l = e.touches.length; i < l; ++i) {
-            var t = e.touches[i];
-            pencil.Stop("touch" + t.identifier);
-        }
-
-        canvas.removeEventListener('touchmove', touchmove);
-    };
-
-    canvas.addEventListener('touchend', touchend);
-    canvas.addEventListener('touchcancel', touchend);
+var mousemove = function (e) {
+    pencil.Stroke('mouse', { x: e.clientX, y: e.clientY });
 };
+
+canvas.addEventListener('mousedown', function (e) {
+    pencil.Start('mouse', { x: e.clientX, y: e.clientY });
+
+    canvas.addEventListener('mousemove', mousemove);
+
+    e.preventDefault();
+});
+
+canvas.addEventListener('mouseup', function (e) {
+    pencil.Stop('mouse');
+
+    canvas.removeEventListener('mousemove', mousemove);
+});
+
+var touchmove = function (e) {
+    for (var i = 0, l = e.touches.length; i < l; ++i) {
+        var t = e.touches[i];
+        pencil.Stroke("touch" + t.identifier, { x: t.clientX, y: t.clientY });
+    }
+};
+
+canvas.addEventListener('touchstart', function (e) {
+    for (var i = 0, l = e.touches.length; i < l; ++i) {
+        var t = e.touches[i];
+        pencil.Start("touch" + t.identifier, { x: t.clientX, y: t.clientY });
+    }
+
+    canvas.addEventListener('touchmove', touchmove);
+
+    e.preventDefault();
+});
+
+var touchend = function (e) {
+    for (var i = 0, l = e.touches.length; i < l; ++i) {
+        var t = e.touches[i];
+        pencil.Stop("touch" + t.identifier);
+    }
+
+    canvas.removeEventListener('touchmove', touchmove);
+};
+
+canvas.addEventListener('touchend', touchend);
+canvas.addEventListener('touchcancel', touchend);
 //# sourceMappingURL=app.js.map

@@ -13,3 +13,58 @@ canvas {
 #map {
 
 }
+
+#colors {
+	position:absolute;
+	right:0;
+	top:0;
+	bottom:0;
+}
+
+#colors div {
+	width: 6em;
+	height: 3em;
+}
+
+.mappaint-control {
+	background: rgba(255,255,255,0.66);
+	border-radius: 4px;
+}
+
+.mappaint-color {
+	margin:0.4em;
+	width:3em;
+	height:3em;
+	border-radius: 50% 43%;
+	/*box-shadow: -1px -1px 6px rgba(0, 0, 0, 0.55) inset, 0px 0px 3px rgba(0,0,0,0.3);*/
+	box-shadow: -3px -4px 0px 0px rgba(0, 0, 0, 0.35) inset, 2px 2px 0px 0px rgba(255,255,255,0.3) inset;
+	cursor: pointer;
+}
+
+.mappaint-color.selected {
+	box-shadow: 3px 4px 0px 0px rgba(0, 0, 0, 0.52) inset, -2px -2px 0px 0px rgba(255,255,255,0.35) inset;
+}
+
+.mappaint-color:hover {
+	box-shadow: -3px -4px 0px 0px rgba(0, 0, 0, 0.55) inset, 2px 2px 0px 0px rgba(255,255,255,0.5) inset;
+}
+
+.mappaint-color.selected:hover {
+	box-shadow: 3px 4px 0px 0px rgba(0, 0, 0, 0.65) inset, -2px -2px 0px 0px rgba(255,255,255,0.5) inset;
+}
+
+
+.mappaint-eraser {
+	font-size: 3em;
+	text-align: center;
+	color: #ad1457;
+	cursor: pointer;
+}
+
+.mappaint-eraser.selected {
+	color: #1a237e;
+}
+
+.mappaint-eraser:hover {
+	color: #880e4f;
+}

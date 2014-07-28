@@ -131,7 +131,7 @@ module MapPaint {
 		public SetColor(r: number, g: number, b: number) {
 			var c = 'rgba(' + r + ',' + g + ',' + b;
 			this.color = c + ',0.8)';
-			this.colorAlternative = c + ',0.2)';
+			this.colorAlternative = c + ',0.16)';
 		}
 
 		public EnableEraser() {
@@ -201,7 +201,7 @@ module MapPaint {
 						dy = py - point.y,
 						d = dx * dx + dy * dy;
 
-					if (d < 4000 && Math.random() > d / 2000) {
+					if (d < 3000 && Math.random() > d / 1500) {
 						var rl = 0.2 + Math.random() * 0.14,
 							mx = dx * rl,
 							my = dy * rl;
@@ -247,7 +247,6 @@ function enhanceContext(canvas, context) {
 	}
 }
 
-window.onload = () => {
 	var canvas = <HTMLCanvasElement> document.getElementById('canvas');
 	canvas.height = window.innerHeight;
 	canvas.width = window.innerWidth;
@@ -257,6 +256,7 @@ window.onload = () => {
 	enhanceContext(canvas, ctx);
 
 	var pencil = new MapPaint.Sketchy(ctx);
+
 
 	var mousemove = (e: MouseEvent) => {
 		pencil.Stroke('mouse', { x: e.clientX, y: e.clientY });
@@ -308,4 +308,3 @@ window.onload = () => {
 
 	canvas.addEventListener('touchend', touchend);
 	canvas.addEventListener('touchcancel', touchend);
-};
