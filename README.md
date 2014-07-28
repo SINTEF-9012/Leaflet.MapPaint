@@ -3,6 +3,7 @@ MapPaint
 
 Procedural painting on maps (WIP)
 
+[Demo](http://sintef-9012.github.io/MapPaint/)
 
 ### Roadmap
 
