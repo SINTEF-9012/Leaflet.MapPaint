@@ -63,6 +63,10 @@
 
             return points;
         };
+
+        SimplePartitionGrid.prototype.Clear = function () {
+            this._grid = {};
+        };
         return SimplePartitionGrid;
     })();
 
@@ -77,8 +81,10 @@
         }
         Sketchy.prototype.SetColor = function (r, g, b) {
             var c = 'rgba(' + r + ',' + g + ',' + b;
-            this.color = c + ',0.8)';
+            this.color = c + ',0.4)';
             this.colorAlternative = c + ',0.16)';
+            this.colorDark = 'rgba(' + Math.round(Math.max(0, r * 0.65 - 10)) + ',' + Math.round(Math.max(0, g * 0.65 - 10)) + ',' + Math.round(Math.max(0, b * 0.65 - 10)) + ',0.07)';
+            this.points.Clear();
         };
 
         Sketchy.prototype.EnableEraser = function () {
@@ -102,26 +108,29 @@
 
             var sdx = previousPoint.x - point.x, sdy = previousPoint.y - point.y, speed = sdx * sdx + sdy * sdy;
 
-            ctx.beginPath();
-
             if (!this.eraser) {
                 ctx.globalCompositeOperation = 'source-over';
 
-                var xa = 0, ya = 12, xb = 4000, yb = 6;
-
-                var w = ya + Math.min(speed, xb) * ((yb - ya) / xb);
-
-                ctx.lineWidth = w;
+                /*var xa = 1,
+                ya = 3,
+                xb = 100,
+                yb = 1;*/
+                //var w = ya + Math.min(speed, xb) * ((yb - ya) / xb);
+                //console.log(w, speed);
+                //ctx.lineWidth = Math.ceil(w);
+                ctx.beginPath();
                 ctx.strokeStyle = this.color;
+                ctx.lineWidth = 1;
 
                 ctx.moveTo(previousPoint.x, previousPoint.y);
                 ctx.lineTo(point.x, point.y);
+                ctx.stroke();
 
-                ctx.lineWidth = 1;
                 ctx.strokeStyle = this.colorAlternative;
             } else {
                 ctx.globalCompositeOperation = 'destination-out';
 
+                ctx.beginPath();
                 ctx.strokeStyle = 'black';
                 ctx.lineWidth = 20;
 
@@ -134,22 +143,50 @@
             if (speed < 500) {
                 var points = this.points.FetchArround(point);
 
+                var lines = [];
+                ctx.beginPath();
+                ctx.strokeStyle = this.colorDark;
+                ctx.lineWidth = 2;
+
                 for (var i = 0, l = points.length; i < l; ++i) {
                     var px = points[i].x, py = points[i].y, dx = px - point.x, dy = py - point.y, d = dx * dx + dy * dy;
 
-                    if (d < 3000 && Math.random() > d / 1500) {
-                        var rl = 0.2 + Math.random() * 0.14, mx = dx * rl, my = dy * rl;
-                        ctx.moveTo(point.x + mx, point.y + my);
-                        ctx.lineTo(px - mx, py - my);
-
+                    if (d < 3000) {
                         if (this.eraser) {
                             points[i].remove = true;
                         }
+                        if (Math.random() > d / 1500) {
+                            lines.push(points[i]);
+
+                            if (Math.random() > 0.1) {
+                                var rl = 0.2 + Math.random() * 0.14, mx = dx * rl, my = dy * rl;
+                                ctx.moveTo(point.x + mx, point.y + my);
+                                ctx.lineTo(px - mx, py - my);
+                            }
+                        }
                     }
                 }
-            }
 
-            ctx.stroke();
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.strokeStyle = this.colorAlternative;
+                ctx.lineWidth = 1;
+
+                for (i = 0, l = lines.length; i < l; ++i) {
+                    px = lines[i].x;
+                    py = lines[i].y;
+                    dx = px - point.x;
+                    dy = py - point.y;
+                    rl = 0.2 + Math.random() * 0.14;
+                    mx = dx * rl;
+                    my = dy * rl;
+                    ctx.moveTo(point.x + mx, point.y + my);
+                    ctx.lineTo(px - mx, py - my);
+                }
+
+                ctx.stroke();
+            }
 
             this.previousPoints[input] = point;
 
