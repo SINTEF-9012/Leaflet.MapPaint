@@ -107,6 +107,10 @@ module MapPaint {
 
 			return points;
 		}
+
+		public Clear() {
+			this._grid = {};
+		}
 	}
 
 	export class Sketchy {
@@ -132,6 +136,7 @@ module MapPaint {
 			var c = 'rgba(' + r + ',' + g + ',' + b;
 			this.color = c + ',0.8)';
 			this.colorAlternative = c + ',0.16)';
+			this.points.Clear();
 		}
 
 		public EnableEraser() {
