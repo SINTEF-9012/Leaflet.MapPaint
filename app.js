@@ -87,7 +87,8 @@
         Sketchy.prototype.SetColor = function (r, g, b) {
             var c = 'rgba(' + r + ',' + g + ',' + b;
             this.color = c + ',0.4)';
-            this.colorFull = c + ',0.9)';
+
+            //this.colorFull = c + ',0.9)';
             this.colorAlternative = c + ',0.16)';
             this.colorDark = 'rgba(' + Math.round(Math.max(0, r * 0.65 - 10)) + ',' + Math.round(Math.max(0, g * 0.65 - 10)) + ',' + Math.round(Math.max(0, b * 0.65 - 10)) + ',0.07)';
             this.points.Clear();
@@ -118,33 +119,36 @@
             if (!this.eraser) {
                 ctx.globalCompositeOperation = 'source-over';
 
-                var w = 1;
-
+                /*var w = 1;
+                
                 if (!this.retina) {
-                    var xa = 0, ya = 1, xb = 255, yb = 3;
-
-                    w = Math.floor(ya + (Math.min(speed, xb) - xa) * ((yb - ya) / (xb - xa)));
+                var xa = 0,
+                ya = 1,
+                xb = 255,
+                yb = 3;
+                
+                w = Math.floor(ya + (Math.min(speed, xb) - xa) * ((yb - ya) / (xb - xa)));
                 }
-
-                ctx.lineWidth = w;
-
-                if (w > 1) {
-                    ctx.lineCap = 'round';
-                    ctx.lineJoin = 'round';
-                    ctx.strokeStyle = this.colorFull;
+                
+                ctx.lineWidth = w;/
+                
+                /*if (w > 1) {
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.strokeStyle = this.colorFull;
                 } else {
-                    ctx.strokeStyle = this.color;
-                }
+                ctx.strokeStyle = this.color;
+                }*/
                 ctx.beginPath();
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 1;
 
-                //ctx.strokeStyle = w >= 2 ? this.colorFull : this.color;
-                //ctx.lineWidth = 1;
                 ctx.moveTo(previousPoint.x, previousPoint.y);
                 ctx.lineTo(point.x, point.y);
                 ctx.stroke();
-                ctx.lineCap = 'butt';
-                ctx.lineJoin = 'miter';
 
+                /*ctx.lineCap = 'butt';
+                ctx.lineJoin = 'miter';*/
                 ctx.strokeStyle = this.colorAlternative;
             } else {
                 ctx.globalCompositeOperation = 'destination-out';
