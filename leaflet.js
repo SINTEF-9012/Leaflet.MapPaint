@@ -40,7 +40,7 @@ var MyControl = L.Control.extend({
         		if (previousC) {
         			previousC.classList.remove('selected');	
         		}
-        		
+
         		c.classList.add('selected');
         		window.pencil.SetColor(color.r, color.g, color.b);
 
@@ -53,15 +53,14 @@ var MyControl = L.Control.extend({
         previousC.click();
 
         var eraser = L.DomUtil.create('div', 'mappaint-eraser');
-       	eraser.appendChild(document.createTextNode('\u232B'));
        	
        	eraser.onclick = function() {
        		pencil.EnableEraser();
        		eraserMode = true;
-       		eraser.classList.add('selected');
     		if (previousC) {
     			previousC.classList.remove('selected');	
     		}
+       		eraser.classList.add('selected');
       		previousC = eraser;
 
       		return false;

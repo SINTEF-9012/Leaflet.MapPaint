@@ -31,7 +31,7 @@ canvas {
 	border-radius: 4px;
 }
 
-.mappaint-color {
+.mappaint-color, .mappaint-eraser {
 	margin:0.4em;
 	width:3em;
 	height:3em;
@@ -45,7 +45,7 @@ canvas {
 	box-shadow: 3px 4px 0px 0px rgba(0, 0, 0, 0.52) inset, -2px -2px 0px 0px rgba(255,255,255,0.35) inset;
 }
 
-.mappaint-color:hover {
+.mappaint-color:hover, .mappaint-eraser:hover {
 	box-shadow: -3px -4px 0px 0px rgba(0, 0, 0, 0.55) inset, 2px 2px 0px 0px rgba(255,255,255,0.5) inset;
 }
 
@@ -55,14 +55,23 @@ canvas {
 
 
 .mappaint-eraser {
-	font-size: 3em;
 	text-align: center;
-	color: #ad1457;
-	cursor: pointer;
+	background: -webkit-linear-gradient(left, #5981D8 39%, rgb(255, 0, 61) 39%);
+	background: -moz-linear-gradient(left, #5981D8 39%, rgb(255, 0, 61) 39%);
+	background: linear-gradient(left, #5981D8 39%, rgb(255, 0, 61) 39%);
+	border-radius: 20% 30%;
+	height: 2em;
+	-webkit-transform: rotate(-45deg);
+	-moz-transform: rotate(-45deg);
+	transform: rotate(-45deg);
+	margin-top: 1em;
+	margin-bottom: 1em;
 }
 
 .mappaint-eraser.selected {
-	color: #1a237e;
+	background: -webkit-linear-gradient(left, #4369BB 39%, rgb(255, 6, 6) 39%);
+	background: -moz-linear-gradient(left, #4369BB 39%, rgb(255, 6, 6) 39%);
+	background: linear-gradient(left, #4369BB 39%, rgb(255, 6, 6) 39%);
 }
 
 .mappaint-eraser:hover {
