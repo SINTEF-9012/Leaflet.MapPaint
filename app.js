@@ -76,9 +76,14 @@
             this.context = context;
             this.previousPoints = {};
             this.eraser = false;
+            this.retina = false;
 
             this.SetColor(0, 0, 0);
         }
+        Sketchy.prototype.SetRetina = function () {
+            this.retina = true;
+        };
+
         Sketchy.prototype.SetColor = function (r, g, b) {
             var c = 'rgba(' + r + ',' + g + ',' + b;
             this.color = c + ',0.4)';
@@ -113,15 +118,26 @@
             if (!this.eraser) {
                 ctx.globalCompositeOperation = 'source-over';
 
-                var xa = 1, ya = 1, xb = 255, yb = 3;
+                var w = 1;
 
-                var w = ya + Math.min(speed, xb) * ((yb - ya) / xb);
-                ctx.lineWidth = Math.round(w);
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
+                if (!this.retina) {
+                    var xa = 0, ya = 1, xb = 255, yb = 3;
+
+                    w = Math.floor(ya + (Math.min(speed, xb) - xa) * ((yb - ya) / (xb - xa)));
+                }
+
+                ctx.lineWidth = w;
+
+                if (w > 1) {
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.strokeStyle = this.colorFull;
+                } else {
+                    ctx.strokeStyle = this.color;
+                }
                 ctx.beginPath();
-                ctx.strokeStyle = w > 2 ? this.colorFull : this.color;
 
+                //ctx.strokeStyle = w >= 2 ? this.colorFull : this.color;
                 //ctx.lineWidth = 1;
                 ctx.moveTo(previousPoint.x, previousPoint.y);
                 ctx.lineTo(point.x, point.y);
@@ -145,7 +161,7 @@
                 ctx.lineCap = 'butt';
             }
 
-            if (speed < 500) {
+            if (speed < (this.retina ? 500 : 1200)) {
                 var points = this.points.FetchArround(point);
 
                 var lines = [];
@@ -226,7 +242,9 @@ function enhanceContext(canvas, context) {
         canvas.style.width = width + "px";
         canvas.style.height = height + "px";
         context.scale(ratio, ratio);
+        return true;
     }
+    return false;
 }
 
 var canvas = document.getElementById('canvas');
@@ -235,9 +253,12 @@ canvas.width = window.innerWidth;
 
 var ctx = canvas.getContext('2d');
 
-enhanceContext(canvas, ctx);
-
 var pencil = new MapPaint.Sketchy(ctx);
+
+if (enhanceContext(canvas, ctx)) {
+    pencil.SetRetina();
+}
+;
 
 var mousemove = function (e) {
     pencil.Stroke('mouse', { x: e.clientX, y: e.clientY });
