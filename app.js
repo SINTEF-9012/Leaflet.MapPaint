@@ -1,10 +1,11 @@
-﻿var MapPaint;
+var MapPaint;
 (function (MapPaint) {
     var SimplePartitionGrid = (function () {
         function SimplePartitionGrid(size, margin) {
             this.size = size;
             this.margin = margin;
             this._grid = {};
+            this._modifiedAreas = {};
         }
         SimplePartitionGrid.prototype.Add = function (point) {
             var posX = Math.floor(point.x / this.size), posY = Math.floor(point.y / this.size), key = posX + "-" + posY;
@@ -13,6 +14,7 @@
                 this._grid[key].push(point);
             } else {
                 this._grid[key] = [point];
+                this._modifiedAreas[key] = true;
             }
         };
 
@@ -67,12 +69,20 @@
         SimplePartitionGrid.prototype.Clear = function () {
             this._grid = {};
         };
+
+        SimplePartitionGrid.prototype.GetModifiedAreas = function () {
+            return this._modifiedAreas;
+        };
+
+        SimplePartitionGrid.prototype.GetGridSize = function () {
+            return this.size;
+        };
         return SimplePartitionGrid;
     })();
 
     var Sketchy = (function () {
         function Sketchy(context) {
-            this.points = new SimplePartitionGrid(128, 80);
+            this.dataGrid = new SimplePartitionGrid(128, 80);
             this.context = context;
             this.previousPoints = {};
             this.eraser = false;
@@ -91,12 +101,12 @@
             //this.colorFull = c + ',0.9)';
             this.colorAlternative = c + ',0.16)';
             this.colorDark = 'rgba(' + Math.round(Math.max(0, r * 0.65 - 10)) + ',' + Math.round(Math.max(0, g * 0.65 - 10)) + ',' + Math.round(Math.max(0, b * 0.65 - 10)) + ',0.07)';
-            this.points.Clear();
+            this.dataGrid.Clear();
         };
 
         Sketchy.prototype.EnableEraser = function () {
             this.eraser = true;
-            this.points.Clear();
+            this.dataGrid.Clear();
         };
 
         Sketchy.prototype.DisableEraser = function () {
@@ -107,7 +117,7 @@
             this.previousPoints[input] = point;
 
             if (!this.eraser) {
-                this.points.Add(point);
+                this.dataGrid.Add(point);
             }
         };
 
@@ -166,7 +176,7 @@
             }
 
             if (speed < (this.retina ? 500 : 1200)) {
-                var points = this.points.FetchArround(point);
+                var points = this.dataGrid.FetchArround(point);
 
                 var lines = [];
                 ctx.beginPath();
@@ -182,7 +192,7 @@
 
                     if (d < 3000) {
                         /*if (this.eraser) {
-                        points[i].remove = true;
+                        dataGrid[i].remove = true;
                         }*/
                         if (Math.random() > d / 1500) {
                             lines.push(points[i]);
@@ -222,20 +232,179 @@
             this.previousPoints[input] = point;
 
             //if (!this.eraser) {
-            this.points.Add(point);
+            this.dataGrid.Add(point);
             //}
         };
 
         Sketchy.prototype.Stop = function (input) {
             delete this.previousPoints[input];
             if (this.eraser) {
-                this.points.ApplyRemove();
+                this.dataGrid.ApplyRemove();
             }
         };
         return Sketchy;
     })();
     MapPaint.Sketchy = Sketchy;
+
+    var Save = (function () {
+        function Save(context, size) {
+            this.context = context;
+            this.size = size;
+        }
+        Save.prototype.MergeModifiedAreas = function (modifiedAreas) {
+            var areas = {};
+
+            var key;
+
+            for (key in modifiedAreas) {
+                areas[key] = null;
+            }
+
+            for (key in areas) {
+                if (areas[key] === null) {
+                    var p = key.split('-'), x = parseInt(p[0]), y = parseInt(p[1]);
+
+                    var bounds = {
+                        xMin: x,
+                        xMax: x + 1,
+                        yMin: y,
+                        yMax: y + 1
+                    };
+
+                    Save._RecursiveMadness(areas, x, y, bounds);
+                }
+            }
+
+            var newAreas = [];
+
+            for (key in areas) {
+                var area = areas[key];
+                if (!area._lapin) {
+                    newAreas.push(area);
+                    area._lapin = true;
+                    area.xMin *= this.size;
+                    area.xMax *= this.size;
+                    area.yMin *= this.size;
+                    area.yMax *= this.size;
+                }
+            }
+
+            return newAreas;
+        };
+
+        Save._RecursiveMadness = function (areas, x, y, bounds) {
+            var key = x + '-' + y;
+
+            if (areas.hasOwnProperty(key) && areas[key] === null) {
+                bounds.xMin = Math.min(x, bounds.xMin);
+                bounds.xMax = Math.max(x + 1, bounds.xMax);
+                bounds.yMin = Math.min(y, bounds.yMin);
+                bounds.yMax = Math.max(y + 1, bounds.yMax);
+
+                areas[key] = bounds;
+
+                this._RecursiveMadness(areas, x - 1, y, bounds);
+                this._RecursiveMadness(areas, x, y - 1, bounds);
+                this._RecursiveMadness(areas, x + 1, y, bounds);
+                this._RecursiveMadness(areas, x, y + 1, bounds);
+                this._RecursiveMadness(areas, x - 1, y - 1, bounds);
+                this._RecursiveMadness(areas, x + 1, y - 1, bounds);
+                this._RecursiveMadness(areas, x + 1, y + 1, bounds);
+                this._RecursiveMadness(areas, x - 1, y + 1, bounds);
+            }
+        };
+
+        Save.prototype.DrawAreas = function (areas) {
+            this.context.fillStyle = 'rgba(255,128,64,0.25)';
+
+            for (var key in areas) {
+                var bounds = areas[key];
+
+                this.context.fillRect(bounds.xMin, bounds.yMin, bounds.xMax - bounds.xMin, bounds.yMax - bounds.yMin);
+            }
+        };
+
+        Save.prototype.GetImageData = function (bounds) {
+            return this.context.getImageData(bounds.xMin, bounds.yMin, bounds.xMax - bounds.xMin, bounds.yMax - bounds.yMin);
+        };
+
+        Save.prototype.CropImageData = function (image) {
+            var w = image.width, h = image.height;
+
+            var xMin = Number.MAX_VALUE, xMax = -Number.MAX_VALUE, yMin = Number.MAX_VALUE, yMax = -Number.MAX_VALUE, found = false;
+
+            for (var y = 0; y < h; ++y) {
+                for (var x = 0; x < w; ++x) {
+                    var pixelPosition = (y * w + x) * 4 + 3, pixelAlpha = image.data[pixelPosition];
+
+                    // If we have something
+                    if (pixelAlpha > 0) {
+                        found = true;
+                        if (y < yMin) {
+                            yMin = y;
+                        }
+                        if (y > yMax) {
+                            yMax = y;
+                        }
+                        if (x > xMax) {
+                            xMax = x;
+                        }
+                        if (x < xMin) {
+                            xMin = x;
+                        }
+                    }
+                }
+            }
+
+            if (found) {
+                return {
+                    xMin: xMin,
+                    xMax: xMax,
+                    yMin: yMin,
+                    yMax: yMax
+                };
+            } else {
+                return null;
+            }
+        };
+
+        Save.prototype.CroppedDrawAreas = function (areas) {
+            var _this = this;
+            var newAreas = [];
+
+            var margin = 10;
+
+            areas.forEach(function (area) {
+                console.log(area);
+                var imageData = _this.GetImageData(area);
+                console.log(imageData);
+
+                var croppedBounds = _this.CropImageData(imageData);
+                console.log(croppedBounds);
+
+                var newBounds = {
+                    xMin: Math.max(0, area.xMin + croppedBounds.xMin - margin),
+                    xMax: area.xMin + croppedBounds.xMax + margin,
+                    yMin: Math.max(0, area.yMin + croppedBounds.yMin - margin),
+                    yMax: area.yMin + croppedBounds.yMax + margin
+                };
+
+                newAreas.push(newBounds);
+            });
+
+            return newAreas;
+        };
+        return Save;
+    })();
+    MapPaint.Save = Save;
 })(MapPaint || (MapPaint = {}));
+
+function lol() {
+    s = new MapPaint.Save(pencil.context, 128);
+    a = s.MergeModifiedAreas(pencil.dataGrid._modifiedAreas);
+    b = s.CroppedDrawAreas(a);
+    s.DrawAreas(b);
+}
 
 function enhanceContext(canvas, context) {
     var ratio = window.devicePixelRatio || 1, width = canvas.width, height = canvas.height;
