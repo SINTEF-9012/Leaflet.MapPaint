@@ -121,6 +121,10 @@ module MapPaint {
 			this._grid = {};
 		}
 
+		public ClearModifiedAreas() {
+			this._modifiedAreas = {};
+		}
+
 		public GetModifiedAreas() {
 			return this._modifiedAreas;
 		}
@@ -320,6 +324,11 @@ module MapPaint {
 			}
 		}
 
+		public Clear() {
+			this.context.canvas.width = this.context.canvas.width;
+			this.dataGrid.Clear();
+			this.dataGrid.ClearModifiedAreas();
+		}
 	}
 
 	export class Save {
@@ -466,15 +475,17 @@ module MapPaint {
 		public CroppedDrawAreas(areas: PaintBounds[]): PaintBounds[] {
 			var newAreas = [];
 
-			var margin = 10;
+			var margin = 8;
 
 			areas.forEach((area: PaintBounds) => {
+				if (area === null) return;
 				console.log(area);
 				var imageData = this.GetImageData(area);
 				console.log(imageData);
 
 				var croppedBounds = this.CropImageData(imageData);
 				console.log(croppedBounds);
+				if (croppedBounds === null) return;
 
 				var newBounds = {
 					xMin: Math.max(0, area.xMin + croppedBounds.xMin - margin),
@@ -490,6 +501,28 @@ module MapPaint {
 
 			return newAreas;
 		}
+
+		public CreatePngs(areas: PaintBounds[]): string[] {
+			var images = [];
+			areas.forEach((area: PaintBounds) => {
+				if (area === null) {
+					images.push(null);
+					return;
+				};
+
+				var imageData = this.GetImageData(area);
+
+				var tmpCanvas: HTMLCanvasElement = document.createElement('canvas');
+				tmpCanvas.width = area.xMax - area.xMin;
+				tmpCanvas.height = area.yMax - area.yMin;
+
+				tmpCanvas.getContext('2d').putImageData(imageData, 0, 0);
+
+				images.push(tmpCanvas.toDataURL('image/png'));
+			});
+
+			return images;
+		}
 	}
 }
 
@@ -499,83 +532,3 @@ function lol() {
 	b = s.CroppedDrawAreas(a)
 	s.DrawAreas(b)
 }
-
-function enhanceContext(canvas, context) {
-	var ratio = window.devicePixelRatio || 1,
-		width = canvas.width,
-		height = canvas.height;
-
-	if (ratio > 1) {
-		canvas.width = width * ratio;
-		canvas.height = height * ratio;
-		canvas.style.width = width + "px";
-		canvas.style.height = height + "px";
-		context.scale(ratio, ratio);
-		return true;
-	}
-	return false;
-}
-
-	var canvas = <HTMLCanvasElement> document.getElementById('canvas');
-	canvas.height = window.innerHeight;
-	canvas.width = window.innerWidth;
-
-	var ctx = canvas.getContext('2d');
-
-	var pencil = new MapPaint.Sketchy(ctx);
-
-	if (enhanceContext(canvas, ctx)) {
-		pencil.SetRetina();
-	};
-
-
-	var mousemove = (e: MouseEvent) => {
-		pencil.Stroke('mouse', { x: e.clientX, y: e.clientY });
-	};
-
-	canvas.addEventListener('mousedown', (e: MouseEvent) => {
-		pencil.Start('mouse', { x: e.clientX, y: e.clientY });
-
-		canvas.addEventListener('mousemove', mousemove);
-
-		e.preventDefault();
-	});
-
-
-	canvas.addEventListener('mouseup', (e: MouseEvent) => {
-		pencil.Stop('mouse');
-
-		canvas.removeEventListener('mousemove', mousemove);
-	});
-
-	var touchmove = (e: TouchEvent) => {
-		for (var i = 0, l = e.touches.length; i < l; ++i) {
-			var t = e.touches[i];
-			pencil.Stroke("touch"+t.identifier, { x: t.clientX, y: t.clientY });
-		}
-	};
-
-	canvas.addEventListener('touchstart', (e: TouchEvent) => {
-
-		for (var i = 0, l = e.touches.length; i < l; ++i) {
-			var t = e.touches[i];
-			pencil.Start("touch"+t.identifier, { x: t.clientX, y: t.clientY });
-		}
-
-		canvas.addEventListener('touchmove', touchmove);
-
-		e.preventDefault();
-	});
-
-
-	var touchend = (e: TouchEvent) => {
-		for (var i = 0, l = e.touches.length; i < l; ++i) {
-			var t = e.touches[i];
-			pencil.Stop("touch" + t.identifier);
-		}
-
-		canvas.removeEventListener('touchmove', touchmove);
-	};
-
-	canvas.addEventListener('touchend', touchend);
-	canvas.addEventListener('touchcancel', touchend);

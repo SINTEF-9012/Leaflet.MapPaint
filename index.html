@@ -8,13 +8,14 @@
 
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
 	<script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+    <script src="app.js"></script>
+    <script src="leaflet.js"></script>
 
     <link rel="stylesheet" href="app.css" type="text/css" />
 	<meta name="apple-mobile-web-app-capable" content="yes">
 </head>
 <body>
 	<div id="map"></div>
-    <canvas id="canvas"></canvas>
 
 	<script>
 	var map = L.map("map", {
@@ -28,13 +29,9 @@
 	    detectRetina: true,
 	    maxNativeZoom: 17
 	}).addTo(map);
- 
+
+	map.MapPaint.enable(); 
 	// L.control.zoom().addTo(map);
 	</script>
-    <script src="app.js"></script>
-    <script src="leaflet.js"></script>
-    <script>
-	map.addControl(new MyControl());
-    </script>
 </body>
 </html>

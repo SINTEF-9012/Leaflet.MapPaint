@@ -77,3 +77,11 @@ canvas {
 .mappaint-eraser:hover {
 	color: #880e4f;
 }
+
+.leaflet-mappaint {
+	background: white;
+}
+
+.leaflet-mappaint button {
+	padding:1em;
+}

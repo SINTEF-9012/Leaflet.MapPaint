@@ -70,6 +70,10 @@ var MapPaint;
             this._grid = {};
         };
 
+        SimplePartitionGrid.prototype.ClearModifiedAreas = function () {
+            this._modifiedAreas = {};
+        };
+
         SimplePartitionGrid.prototype.GetModifiedAreas = function () {
             return this._modifiedAreas;
         };
@@ -242,6 +246,12 @@ var MapPaint;
                 this.dataGrid.ApplyRemove();
             }
         };
+
+        Sketchy.prototype.Clear = function () {
+            this.context.canvas.width = this.context.canvas.width;
+            this.dataGrid.Clear();
+            this.dataGrid.ClearModifiedAreas();
+        };
         return Sketchy;
     })();
     MapPaint.Sketchy = Sketchy;
@@ -372,15 +382,19 @@ var MapPaint;
             var _this = this;
             var newAreas = [];
 
-            var margin = 10;
+            var margin = 8;
 
             areas.forEach(function (area) {
+                if (area === null)
+                    return;
                 console.log(area);
                 var imageData = _this.GetImageData(area);
                 console.log(imageData);
 
                 var croppedBounds = _this.CropImageData(imageData);
                 console.log(croppedBounds);
+                if (croppedBounds === null)
+                    return;
 
                 var newBounds = {
                     xMin: Math.max(0, area.xMin + croppedBounds.xMin - margin),
@@ -394,6 +408,30 @@ var MapPaint;
 
             return newAreas;
         };
+
+        Save.prototype.CreatePngs = function (areas) {
+            var _this = this;
+            var images = [];
+            areas.forEach(function (area) {
+                if (area === null) {
+                    images.push(null);
+                    return;
+                }
+                ;
+
+                var imageData = _this.GetImageData(area);
+
+                var tmpCanvas = document.createElement('canvas');
+                tmpCanvas.width = area.xMax - area.xMin;
+                tmpCanvas.height = area.yMax - area.yMin;
+
+                tmpCanvas.getContext('2d').putImageData(imageData, 0, 0);
+
+                images.push(tmpCanvas.toDataURL('image/png'));
+            });
+
+            return images;
+        };
         return Save;
     })();
     MapPaint.Save = Save;
@@ -405,79 +443,4 @@ function lol() {
     b = s.CroppedDrawAreas(a);
     s.DrawAreas(b);
 }
-
-function enhanceContext(canvas, context) {
-    var ratio = window.devicePixelRatio || 1, width = canvas.width, height = canvas.height;
-
-    if (ratio > 1) {
-        canvas.width = width * ratio;
-        canvas.height = height * ratio;
-        canvas.style.width = width + "px";
-        canvas.style.height = height + "px";
-        context.scale(ratio, ratio);
-        return true;
-    }
-    return false;
-}
-
-var canvas = document.getElementById('canvas');
-canvas.height = window.innerHeight;
-canvas.width = window.innerWidth;
-
-var ctx = canvas.getContext('2d');
-
-var pencil = new MapPaint.Sketchy(ctx);
-
-if (enhanceContext(canvas, ctx)) {
-    pencil.SetRetina();
-}
-;
-
-var mousemove = function (e) {
-    pencil.Stroke('mouse', { x: e.clientX, y: e.clientY });
-};
-
-canvas.addEventListener('mousedown', function (e) {
-    pencil.Start('mouse', { x: e.clientX, y: e.clientY });
-
-    canvas.addEventListener('mousemove', mousemove);
-
-    e.preventDefault();
-});
-
-canvas.addEventListener('mouseup', function (e) {
-    pencil.Stop('mouse');
-
-    canvas.removeEventListener('mousemove', mousemove);
-});
-
-var touchmove = function (e) {
-    for (var i = 0, l = e.touches.length; i < l; ++i) {
-        var t = e.touches[i];
-        pencil.Stroke("touch" + t.identifier, { x: t.clientX, y: t.clientY });
-    }
-};
-
-canvas.addEventListener('touchstart', function (e) {
-    for (var i = 0, l = e.touches.length; i < l; ++i) {
-        var t = e.touches[i];
-        pencil.Start("touch" + t.identifier, { x: t.clientX, y: t.clientY });
-    }
-
-    canvas.addEventListener('touchmove', touchmove);
-
-    e.preventDefault();
-});
-
-var touchend = function (e) {
-    for (var i = 0, l = e.touches.length; i < l; ++i) {
-        var t = e.touches[i];
-        pencil.Stop("touch" + t.identifier);
-    }
-
-    canvas.removeEventListener('touchmove', touchmove);
-};
-
-canvas.addEventListener('touchend', touchend);
-canvas.addEventListener('touchcancel', touchend);
 //# sourceMappingURL=app.js.map
