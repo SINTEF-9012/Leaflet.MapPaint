@@ -119,6 +119,7 @@ module MapPaint {
 		private previousPoints: { [input: string]: PaintPoint };
 
 		private color: string;
+		private colorFull: string;
 		private colorAlternative: string;
 		private colorDark: string;
 
@@ -136,6 +137,7 @@ module MapPaint {
 		public SetColor(r: number, g: number, b: number) {
 			var c = 'rgba(' + r + ',' + g + ',' + b;
 			this.color = c + ',0.4)';
+			this.colorFull = c + ',0.9)';
 			this.colorAlternative = c + ',0.16)';
 			this.colorDark = 'rgba('
 				+ Math.round(Math.max(0, r * 0.65 - 10)) + ','
@@ -146,6 +148,7 @@ module MapPaint {
 
 		public EnableEraser() {
 			this.eraser = true;
+			this.points.Clear();
 		}
 
 		public DisableEraser() {
@@ -172,34 +175,39 @@ module MapPaint {
 			if (!this.eraser) {
 				ctx.globalCompositeOperation = 'source-over';
 
-				/*var xa = 1,
-					ya = 3,
-					xb = 100,
-					yb = 1;*/
+				var xa = 1,
+					ya = 1,
+					xb = 255,
+					yb = 3;
 
-				//var w = ya + Math.min(speed, xb) * ((yb - ya) / xb);
-				//console.log(w, speed);
-				//ctx.lineWidth = Math.ceil(w);
+				var w = ya + Math.min(speed, xb) * ((yb - ya) / xb);
+				ctx.lineWidth = Math.round(w);
+				ctx.lineCap = 'round';
+				ctx.lineJoin = 'round';
 				ctx.beginPath();
-				ctx.strokeStyle = this.color;
-				ctx.lineWidth = 1;
+				ctx.strokeStyle = w > 2 ? this.colorFull : this.color;
+				//ctx.lineWidth = 1;
 
 				ctx.moveTo(previousPoint.x, previousPoint.y);
 				ctx.lineTo(point.x, point.y);
 				ctx.stroke();
+				ctx.lineCap = 'butt';
+				ctx.lineJoin = 'miter';
 
 				ctx.strokeStyle = this.colorAlternative;
 			} else {
 				ctx.globalCompositeOperation = 'destination-out';
 
 				ctx.beginPath();
-				ctx.strokeStyle = 'black';
-				ctx.lineWidth = 20;
+				ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+				ctx.lineWidth = 10;
+				ctx.lineCap = 'round';
 
 				ctx.moveTo(previousPoint.x, previousPoint.y);
 				ctx.lineTo(point.x, point.y);
 
-				ctx.lineWidth = 2;
+				ctx.stroke();
+				ctx.lineCap = 'butt';
 			}
 
 			if (speed < 500) {
@@ -207,7 +215,9 @@ module MapPaint {
 
 				var lines = [];
 				ctx.beginPath();
-				ctx.strokeStyle = this.colorDark;
+				//if (!this.eraser) {
+					ctx.strokeStyle = this.colorDark;
+				//}
 				ctx.lineWidth = 2;
 
 				for (var i = 0, l = points.length; i < l; ++i) {
@@ -218,9 +228,9 @@ module MapPaint {
 						d = dx * dx + dy * dy;
 
 					if (d < 3000) {
-						if (this.eraser) {
+						/*if (this.eraser) {
 							points[i].remove = true;
-						}
+						}*/
 						if (Math.random() > d / 1500) {
 							lines.push(points[i]);
 
@@ -239,7 +249,9 @@ module MapPaint {
 				ctx.stroke();
 
 				ctx.beginPath();
-				ctx.strokeStyle = this.colorAlternative;
+				if (!this.eraser) {
+					ctx.strokeStyle = this.colorAlternative;
+				}
 				ctx.lineWidth = 1;
 
 				for (i = 0, l = lines.length; i < l; ++i) {
@@ -260,9 +272,9 @@ module MapPaint {
 
 			this.previousPoints[input] = point;
 
-			if (!this.eraser) {
+			//if (!this.eraser) {
 				this.points.Add(point);
-			}
+			//}
 		}
 
 		public Stop(input: string) {

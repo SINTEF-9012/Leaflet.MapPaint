@@ -37,12 +37,13 @@ var MyControl = L.Control.extend({
         			eraserMode = false;
         		}
 
-        		c.classList.add('selected');
-        		window.pencil.SetColor(color.r, color.g, color.b);
-
         		if (previousC) {
         			previousC.classList.remove('selected');	
         		}
+        		
+        		c.classList.add('selected');
+        		window.pencil.SetColor(color.r, color.g, color.b);
+
         		previousC = c;
         		return false;
         	}
