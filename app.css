@@ -84,4 +84,32 @@ canvas {
 
 .leaflet-mappaint button {
 	padding:1em;
+	padding: 20px;
+	-webkit-appearance: none;
+}
+
+.mappaint-filler {
+	cursor: pointer;
+	height: 25px;
+	width: 25px;
+	background: #3F51B5;
+	margin-top: 5px;
+	margin-left: 5px;
+	margin-bottom: 15px;	
+}
+
+.mappaint-filler:after {
+	content: "\00a0";
+	height: 25px;
+	width: 25px;
+	background: red;
+	border-radius: 50%;
+	display: block;
+	position: relative;
+	top: 8px;
+	left: 8px;
+}
+
+.mappaint-filler.enabled:after {
+	z-index: -1;
 }

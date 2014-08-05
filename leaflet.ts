@@ -6,9 +6,6 @@ var MyControl = L.Control.extend({
 		colors: [
 			{ r: 0, g: 0, b: 0 },
 			{ r: 255, g: 255, b: 255 },
-			// {r:255, g:0, b:0},
-			// {r:0, g:255, b:0},
-			// {r:0, g:0, b:255}
 			{ r: 229, g: 28, b: 35 },
 			{ r: 156, g: 39, b: 176 },
 			{ r: 63, g: 81, b: 181 },
@@ -27,13 +24,14 @@ var MyControl = L.Control.extend({
 		// create the control container with a particular class name
 		var container = L.DomUtil.create('div', 'mappaint-control');
 
-		var eraserMode = false;
+		var eraserMode = false,
+			fillerMode = false;
 
 		this.options.colors.forEach((color) => {
 			var c = L.DomUtil.create('div', 'mappaint-color');
 			c.style.background = 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
 			container.appendChild(c);
-			c.onclick =  () => {
+			c.onclick = () => {
 				if (eraserMode) {
 					this.pencil.DisableEraser();
 					eraserMode = false;
@@ -68,7 +66,24 @@ var MyControl = L.Control.extend({
 			return false;
 		}
 
-       	container.appendChild(eraser);
+		container.appendChild(eraser);
+
+		var filler = L.DomUtil.create('div', 'mappaint-filler');
+
+		filler.onclick = () => {
+			fillerMode = !fillerMode;
+			if (fillerMode) {
+				this.pencil.EnableFiller();
+				filler.classList.add('enabled');
+			} else {
+				this.pencil.DisableFiller();
+				filler.classList.remove('enabled');
+			}
+
+			return false;
+		};
+
+		container.appendChild(filler);
 
 		return container;
 	}
@@ -88,7 +103,7 @@ var MyControl2 = L.Control.extend({
 
 		L.DomEvent.addListener(btn, 'click', () => {
 			var pencil : MapPaint.Sketchy = this.pencil;
-			s = new MapPaint.Save(pencil.context, 128)
+			s = new MapPaint.Save(pencil.context, 128, pencil.retina)
 			a = s.MergeModifiedAreas(pencil.dataGrid._modifiedAreas)
 			b = s.CroppedDrawAreas(a)
 			s.DrawAreas(b);
@@ -149,9 +164,7 @@ L.MapPaint = L.Handler.extend({
 
 		this.pencil = new MapPaint.Sketchy(ctx);
 
-		if (this._enhanceContext(ctx)) {
-			this.pencil.SetRetina();
-		};
+		this.pencil.retina = this._enhanceContext(ctx);
 
 		this.control = new MyControl();
 		this.control.pencil = this.pencil;
@@ -194,6 +207,7 @@ L.MapPaint = L.Handler.extend({
 		
 		for (var i = 0, l = e.touches.length; i < l; ++i) {
 			var t = e.touches[i];
+			console.log(t.clientX, t.clientY);
 			this.pencil.Start("touch"+t.identifier, { x: t.clientX, y: t.clientY });
 		}
 
@@ -286,9 +300,9 @@ L.MapPaint = L.Handler.extend({
 			canvas.style.width = width + "px";
 			canvas.style.height = height + "px";
 			context.scale(ratio, ratio);
-			return true;
+			return ratio;
 		}
-		return false;
+		return 1.0;
 	}
 });
 

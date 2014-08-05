@@ -146,31 +146,41 @@ module MapPaint {
 
 		private eraser: boolean;
 
-		private retina: boolean;
+		public retina: number;
+
+		private modeFiller: boolean;
 
 		constructor(context: CanvasRenderingContext2D) {
 			this.dataGrid = new SimplePartitionGrid(128, 80);
 			this.context = context;
 			this.previousPoints = {};
 			this.eraser = false;
-			this.retina = false;
+			this.retina = 1.0;
+
+			this.modeFiller = false;
 
 			this.SetColor(0, 0, 0);
 		}
 
-		public SetRetina() {
-			this.retina = true;
-		}
-
 		public SetColor(r: number, g: number, b: number) {
 			var c = 'rgba(' + r + ',' + g + ',' + b;
-			this.color = c + ',0.4)';
+			this.color = c + ',0.45)';
 			//this.colorFull = c + ',0.9)';
 			this.colorAlternative = c + ',0.16)';
 			this.colorDark = 'rgba('
 				+ Math.round(Math.max(0, r * 0.65 - 10)) + ','
 				+ Math.round(Math.max(0, g * 0.65 - 10)) + ','
 			+ Math.round(Math.max(0, b * 0.65 - 10)) + ',0.07)';
+			this.dataGrid.Clear();
+		}
+
+		public EnableFiller() {
+			this.modeFiller = true;
+			this.dataGrid.Clear();
+		}
+
+		public DisableFiller() {
+			this.modeFiller = false;
 			this.dataGrid.Clear();
 		}
 
@@ -181,6 +191,7 @@ module MapPaint {
 
 		public DisableEraser() {
 			this.eraser = false;
+			this.dataGrid.Clear();
 		} 
 		
 		public Start(input: string, point: PaintPoint) {
@@ -201,7 +212,7 @@ module MapPaint {
 				speed = sdx * sdx + sdy * sdy;
 
 			if (!this.eraser) {
-				ctx.globalCompositeOperation = 'source-over';
+				ctx.globalCompositeOperation = this.modeFiller ? 'destination-over' : 'source-over';
 
 				/*var w = 1;
 
@@ -230,9 +241,18 @@ module MapPaint {
 
 				ctx.moveTo(previousPoint.x, previousPoint.y);
 				ctx.lineTo(point.x, point.y);
+				
+				// LOL ?	
+				/*for (var ii = 0, ll = Math.round(Math.random() * 2) + 2; ii < ll; ++ii) {
+					var randomX = Math.random() * 2 - 1,
+						randomY = Math.random() * 2 - 1;
+					ctx.moveTo(previousPoint.x + randomX, previousPoint.y + randomY);
+					ctx.lineTo(point.x + randomY, point.y + randomY);
+				}*/
+
 				ctx.stroke();
-				/*ctx.lineCap = 'butt';
-				ctx.lineJoin = 'miter';*/
+				//ctx.lineCap = 'round';
+				//ctx.lineJoin = 'round';
 
 				ctx.strokeStyle = this.colorAlternative;
 			} else {
@@ -245,18 +265,22 @@ module MapPaint {
 
 				ctx.moveTo(previousPoint.x, previousPoint.y);
 				ctx.lineTo(point.x, point.y);
+			
 
 				ctx.stroke();
 				ctx.lineCap = 'butt';
 			}
 
-			if (speed < (this.retina ? 500 : 1200)) {
+			var angleCst = Math.atan2(previousPoint.x - point.x, previousPoint.y - point.y);
+			var doublePI = Math.PI + Math.PI;
+
+			if (speed < (this.retina > 1.0 ? 2200 : 800)) {
 				var points = this.dataGrid.FetchArround(point);
 
 				var lines = [];
 				ctx.beginPath();
 				//if (!this.eraser) {
-					ctx.strokeStyle = this.colorDark;
+					ctx.strokeStyle = this.modeFiller ? this.colorAlternative : this.colorDark;
 				//}
 				ctx.lineWidth = 2;
 
@@ -271,10 +295,19 @@ module MapPaint {
 						/*if (this.eraser) {
 							dataGrid[i].remove = true;
 						}*/
-						if (Math.random() > d / 1500) {
+
+						var angle = Math.atan2(px - point.x, py - point.y) - angleCst;
+						if (angle < 0) {
+							angle += doublePI;
+						} else if (angle > doublePI) {
+							angle -= doublePI;
+						}
+						angle = 0;
+						if ((angle > 5.9 || angle < 0.4) && Math.random() > d / 1500) {
+							//console.log(angle);
 							lines.push(points[i]);
 
-							if (Math.random() > 0.1) {
+							if (this.modeFiller || Math.random() > 0.3) {
 								var rl = 0.2 + Math.random() * 0.14,
 									mx = dx * rl,
 									my = dy * rl;
@@ -290,20 +323,22 @@ module MapPaint {
 
 				ctx.beginPath();
 				if (!this.eraser) {
-					ctx.strokeStyle = this.colorAlternative;
+					ctx.strokeStyle = this.modeFiller ? this.colorDark : this.colorAlternative;
 				}
 				ctx.lineWidth = 1;
 
 				for (i = 0, l = lines.length; i < l; ++i) {
-					px = lines[i].x;
-					py = lines[i].y;
-					dx = px - point.x;
-					dy = py - point.y;
-					rl = 0.2 + Math.random() * 0.14;
-					mx = dx * rl;
-					my = dy * rl;
-					ctx.moveTo(point.x + mx, point.y + my);
-					ctx.lineTo(px - mx, py - my);
+					if (!this.modeFiller || Math.random() > 0.3) {
+						px = lines[i].x;
+						py = lines[i].y;
+						dx = px - point.x;
+						dy = py - point.y;
+						rl = 0.2 + Math.random() * 0.14;
+						mx = dx * rl;
+						my = dy * rl;
+						ctx.moveTo(point.x + mx, point.y + my);
+						ctx.lineTo(px - mx, py - my);
+					}
 				}
 
 				ctx.stroke();
@@ -315,6 +350,15 @@ module MapPaint {
 			//if (!this.eraser) {
 				this.dataGrid.Add(point);
 			//}
+
+			if (this.retina > 1.0) {
+				var middlePoint : PaintPoint = {
+					x: (point.x + previousPoint.x) / 2,
+					y: (point.y + previousPoint.y) / 2
+				};
+
+				this.dataGrid.Add(middlePoint);
+			}
 		}
 
 		public Stop(input: string) {
@@ -326,13 +370,14 @@ module MapPaint {
 
 		public Clear() {
 			this.context.canvas.width = this.context.canvas.width;
+			this.context.scale(this.retina, this.retina);
 			this.dataGrid.Clear();
 			this.dataGrid.ClearModifiedAreas();
 		}
 	}
 
 	export class Save {
-		constructor(private context: CanvasRenderingContext2D, private size: number) {
+		constructor(private context: CanvasRenderingContext2D, private size: number, private retina: number) {
 			
 		}
 
@@ -418,15 +463,17 @@ module MapPaint {
 		}
 
 		public GetImageData(bounds: PaintBounds) : ImageData {
+			var r = this.retina;
 			return this.context.getImageData(
-					bounds.xMin, bounds.yMin,
-					bounds.xMax - bounds.xMin,
-					bounds.yMax - bounds.yMin);
+					bounds.xMin * r, bounds.yMin * r,
+					(bounds.xMax - bounds.xMin) * r,
+					(bounds.yMax - bounds.yMin) * r);
 		}
 
 		public CropImageData(image: ImageData) : PaintBounds {
 			var w = image.width,
-				h = image.height;
+				h = image.height,
+				r = this.retina;
 
 			var xMin = Number.MAX_VALUE,
 				xMax = -Number.MAX_VALUE,
@@ -462,30 +509,30 @@ module MapPaint {
 
 			if (found) {
 				return {
-					xMin: xMin,
-					xMax: xMax,
-					yMin: yMin,
-					yMax: yMax
+					xMin: xMin / r,
+					xMax: xMax / r,
+					yMin: yMin / r,
+					yMax: yMax / r 
 				}
 			} else {
 				return null;
 			}
 		}
 
-		public CroppedDrawAreas(areas: PaintBounds[]): PaintBounds[] {
+		public CroppedDrawAreas(areas: PaintBounds[]): PaintBounds[]{
 			var newAreas = [];
 
 			var margin = 8;
 
 			areas.forEach((area: PaintBounds) => {
-				if (area === null) return;
+				if (!area) return;
 				console.log(area);
 				var imageData = this.GetImageData(area);
 				console.log(imageData);
 
 				var croppedBounds = this.CropImageData(imageData);
 				console.log(croppedBounds);
-				if (croppedBounds === null) return;
+				if (!croppedBounds) return;
 
 				var newBounds = {
 					xMin: Math.max(0, area.xMin + croppedBounds.xMin - margin),
@@ -503,7 +550,7 @@ module MapPaint {
 		}
 
 		public CreatePngs(areas: PaintBounds[]): string[] {
-			var images = [];
+			var images = [], r = this.retina;
 			areas.forEach((area: PaintBounds) => {
 				if (area === null) {
 					images.push(null);
@@ -513,8 +560,8 @@ module MapPaint {
 				var imageData = this.GetImageData(area);
 
 				var tmpCanvas: HTMLCanvasElement = document.createElement('canvas');
-				tmpCanvas.width = area.xMax - area.xMin;
-				tmpCanvas.height = area.yMax - area.yMin;
+				tmpCanvas.width = (area.xMax - area.xMin) * r;
+				tmpCanvas.height = (area.yMax - area.yMin) * r;
 
 				tmpCanvas.getContext('2d').putImageData(imageData, 0, 0);
 
