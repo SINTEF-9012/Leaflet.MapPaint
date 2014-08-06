@@ -83,6 +83,7 @@ var MapPaint;
         };
         return SimplePartitionGrid;
     })();
+    MapPaint.SimplePartitionGrid = SimplePartitionGrid;
 
     var Sketchy = (function () {
         function Sketchy(context) {
@@ -95,12 +96,13 @@ var MapPaint;
             this.modeFiller = false;
 
             this.SetColor(0, 0, 0);
+
+            this.pencil = MapPaint.ProceduralPencil;
         }
         Sketchy.prototype.SetColor = function (r, g, b) {
             var c = 'rgba(' + r + ',' + g + ',' + b;
             this.color = c + ',0.45)';
-
-            //this.colorFull = c + ',0.9)';
+            this.colorFull = c + ',1.0)';
             this.colorAlternative = c + ',0.16)';
             this.colorDark = 'rgba(' + Math.round(Math.max(0, r * 0.65 - 10)) + ',' + Math.round(Math.max(0, g * 0.65 - 10)) + ',' + Math.round(Math.max(0, b * 0.65 - 10)) + ',0.07)';
             this.dataGrid.Clear();
@@ -137,138 +139,20 @@ var MapPaint;
         Sketchy.prototype.Stroke = function (input, point) {
             var ctx = this.context, previousPoint = this.previousPoints[input];
 
-            var sdx = previousPoint.x - point.x, sdy = previousPoint.y - point.y, speed = sdx * sdx + sdy * sdy;
+            ctx.globalCompositeOperation = this.modeFiller ? 'destination-over' : 'source-over';
 
-            if (!this.eraser) {
-                ctx.globalCompositeOperation = this.modeFiller ? 'destination-over' : 'source-over';
-
-                /*var w = 1;
-                
-                if (!this.retina) {
-                var xa = 0,
-                ya = 1,
-                xb = 255,
-                yb = 3;
-                
-                w = Math.floor(ya + (Math.min(speed, xb) - xa) * ((yb - ya) / (xb - xa)));
-                }
-                
-                ctx.lineWidth = w;/
-                
-                /*if (w > 1) {
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                ctx.strokeStyle = this.colorFull;
-                } else {
-                ctx.strokeStyle = this.color;
-                }*/
-                ctx.beginPath();
-                ctx.strokeStyle = this.color;
-                ctx.lineWidth = 1;
-
-                ctx.moveTo(previousPoint.x, previousPoint.y);
-                ctx.lineTo(point.x, point.y);
-
-                // LOL ?
-                /*for (var ii = 0, ll = Math.round(Math.random() * 2) + 2; ii < ll; ++ii) {
-                var randomX = Math.random() * 2 - 1,
-                randomY = Math.random() * 2 - 1;
-                ctx.moveTo(previousPoint.x + randomX, previousPoint.y + randomY);
-                ctx.lineTo(point.x + randomY, point.y + randomY);
-                }*/
-                ctx.stroke();
-
-                //ctx.lineCap = 'round';
-                //ctx.lineJoin = 'round';
-                ctx.strokeStyle = this.colorAlternative;
+            if (this.eraser) {
+                MapPaint.Rubber.draw(ctx, point, previousPoint, this);
             } else {
-                ctx.globalCompositeOperation = 'destination-out';
-
-                ctx.beginPath();
-                ctx.strokeStyle = 'rgba(0,0,0,0.6)';
-                ctx.lineWidth = 10;
-                ctx.lineCap = 'round';
-
-                ctx.moveTo(previousPoint.x, previousPoint.y);
-                ctx.lineTo(point.x, point.y);
-
-                ctx.stroke();
-                ctx.lineCap = 'butt';
-            }
-
-            var angleCst = Math.atan2(previousPoint.x - point.x, previousPoint.y - point.y);
-            var doublePI = Math.PI + Math.PI;
-
-            if (speed < (this.retina > 1.0 ? 2200 : 800)) {
-                var points = this.dataGrid.FetchArround(point);
-
-                var lines = [];
-                ctx.beginPath();
-
-                //if (!this.eraser) {
-                ctx.strokeStyle = this.modeFiller ? this.colorAlternative : this.colorDark;
-
-                //}
-                ctx.lineWidth = 2;
-
-                for (var i = 0, l = points.length; i < l; ++i) {
-                    var px = points[i].x, py = points[i].y, dx = px - point.x, dy = py - point.y, d = dx * dx + dy * dy;
-
-                    if (d < 3000) {
-                        /*if (this.eraser) {
-                        dataGrid[i].remove = true;
-                        }*/
-                        var angle = Math.atan2(px - point.x, py - point.y) - angleCst;
-                        if (angle < 0) {
-                            angle += doublePI;
-                        } else if (angle > doublePI) {
-                            angle -= doublePI;
-                        }
-                        angle = 0;
-                        if ((angle > 5.9 || angle < 0.4) && Math.random() > d / 1500) {
-                            //console.log(angle);
-                            lines.push(points[i]);
-
-                            if (this.modeFiller || Math.random() > 0.3) {
-                                var rl = 0.2 + Math.random() * 0.14, mx = dx * rl, my = dy * rl;
-                                ctx.moveTo(point.x + mx, point.y + my);
-                                ctx.lineTo(px - mx, py - my);
-                            }
-                        }
-                    }
-                }
-
-                ctx.stroke();
-
-                ctx.beginPath();
-                if (!this.eraser) {
-                    ctx.strokeStyle = this.modeFiller ? this.colorDark : this.colorAlternative;
-                }
-                ctx.lineWidth = 1;
-
-                for (i = 0, l = lines.length; i < l; ++i) {
-                    if (!this.modeFiller || Math.random() > 0.3) {
-                        px = lines[i].x;
-                        py = lines[i].y;
-                        dx = px - point.x;
-                        dy = py - point.y;
-                        rl = 0.2 + Math.random() * 0.14;
-                        mx = dx * rl;
-                        my = dy * rl;
-                        ctx.moveTo(point.x + mx, point.y + my);
-                        ctx.lineTo(px - mx, py - my);
-                    }
-                }
-
-                ctx.stroke();
+                this.pencil.draw(ctx, point, previousPoint, this);
             }
 
             this.previousPoints[input] = point;
 
-            //if (!this.eraser) {
             this.dataGrid.Add(point);
 
-            //}
+            // If it's a retina screen, add a second point in the middle
+            // (it smooths a bit the draw)
             if (this.retina > 1.0) {
                 var middlePoint = {
                     x: (point.x + previousPoint.x) / 2,
@@ -291,6 +175,14 @@ var MapPaint;
             this.context.scale(this.retina, this.retina);
             this.dataGrid.Clear();
             this.dataGrid.ClearModifiedAreas();
+        };
+
+        Sketchy.prototype.ClearDatagrid = function () {
+            this.dataGrid.Clear();
+        };
+
+        Sketchy.prototype.FetchPointsArround = function (point) {
+            return this.dataGrid.FetchArround(point);
         };
         return Sketchy;
     })();
@@ -477,6 +369,160 @@ var MapPaint;
         return Save;
     })();
     MapPaint.Save = Save;
+
+    MapPaint.UglyFeltPen = {
+        draw: function (ctx, point, previousPoint, sketch) {
+            ctx.beginPath();
+            ctx.strokeStyle = sketch.color;
+            ctx.lineWidth = 16;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            ctx.moveTo(previousPoint.x, previousPoint.y);
+            ctx.lineTo(point.x, point.y);
+
+            ctx.stroke();
+
+            ctx.lineWidth = 14;
+            ctx.strokeStyle = sketch.colorFull;
+
+            ctx.moveTo(previousPoint.x, previousPoint.y);
+            ctx.lineTo(point.x, point.y);
+
+            ctx.stroke();
+        }
+    };
+
+    MapPaint.Rubber = {
+        draw: function (ctx, point, previousPoint, sketch) {
+            ctx.globalCompositeOperation = 'destination-out';
+
+            ctx.beginPath();
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 30;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            ctx.moveTo(previousPoint.x, previousPoint.y);
+            ctx.lineTo(point.x, point.y);
+
+            ctx.stroke();
+        }
+    };
+
+    MapPaint.ProceduralPencil = {
+        draw: function (ctx, point, previousPoint, sketch, maxAngle) {
+            var sdx = previousPoint.x - point.x, sdy = previousPoint.y - point.y, speed = sdx * sdx + sdy * sdy;
+
+            /*var w = 1;
+            
+            if (!this.retina) {
+            var xa = 0,
+            ya = 1,
+            xb = 255,
+            yb = 3;
+            
+            w = Math.floor(ya + (Math.min(speed, xb) - xa) * ((yb - ya) / (xb - xa)));
+            }
+            
+            ctx.lineWidth = w;/
+            
+            /*if (w > 1) {
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = this.colorFull;
+            } else {
+            ctx.strokeStyle = this.color;
+            }*/
+            ctx.beginPath();
+            ctx.strokeStyle = sketch.color;
+            ctx.lineWidth = 1;
+            ctx.lineCap = 'butt';
+            ctx.lineJoin = 'miter';
+
+            ctx.moveTo(previousPoint.x, previousPoint.y);
+            ctx.lineTo(point.x, point.y);
+
+            // It was a bad idea :-)
+            /*for (var ii = 0, ll = Math.round(Math.random() * 2) + 2; ii < ll; ++ii) {
+            var randomX = Math.random() * 2 - 1,
+            randomY = Math.random() * 2 - 1;
+            ctx.moveTo(previousPoint.x + randomX, previousPoint.y + randomY);
+            ctx.lineTo(point.x + randomY, point.y + randomY);
+            }*/
+            ctx.stroke();
+
+            //ctx.lineCap = 'round';
+            //ctx.lineJoin = 'round';
+            ctx.strokeStyle = sketch.colorAlternative;
+
+            if (maxAngle) {
+                var angleCst = Math.atan2(previousPoint.x - point.x, previousPoint.y - point.y);
+                var doublePI = Math.PI + Math.PI, limitAngleMax = doublePI - maxAngle, limitAngleMin = maxAngle;
+            }
+
+            if (speed < (sketch.retina > 1.0 ? 2200 : 800)) {
+                var points = sketch.FetchPointsArround(point);
+
+                var lines = [];
+                ctx.beginPath();
+                ctx.strokeStyle = sketch.modeFiller ? sketch.colorAlternative : sketch.colorDark;
+                ctx.lineWidth = 2;
+
+                for (var i = 0, l = points.length; i < l; ++i) {
+                    var px = points[i].x, py = points[i].y, dx = px - point.x, dy = py - point.y, d = dx * dx + dy * dy;
+
+                    if (d < 2684) {
+                        if (maxAngle) {
+                            var angle = Math.atan2(px - point.x, py - point.y) - angleCst;
+                            if (angle < 0) {
+                                angle += doublePI;
+                            } else if (angle > doublePI) {
+                                angle -= doublePI;
+                            }
+                        }
+                        if ((!maxAngle || (angle > limitAngleMax || angle < limitAngleMin)) && Math.random() > d / 1342) {
+                            lines.push(points[i]);
+
+                            if (sketch.modeFiller || Math.random() > 0.3) {
+                                var rl = 0.2 + Math.random() * 0.14, mx = dx * rl, my = dy * rl;
+                                ctx.moveTo(point.x + mx, point.y + my);
+                                ctx.lineTo(px - mx, py - my);
+                            }
+                        }
+                    }
+                }
+
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.strokeStyle = sketch.modeFiller ? sketch.colorDark : sketch.colorAlternative;
+                ctx.lineWidth = 1;
+
+                for (i = 0, l = lines.length; i < l; ++i) {
+                    if (!sketch.modeFiller || Math.random() > 0.3) {
+                        px = lines[i].x;
+                        py = lines[i].y;
+                        dx = px - point.x;
+                        dy = py - point.y;
+                        rl = 0.2 + Math.random() * 0.14;
+                        mx = dx * rl;
+                        my = dy * rl;
+                        ctx.moveTo(point.x + mx, point.y + my);
+                        ctx.lineTo(px - mx, py - my);
+                    }
+                }
+
+                ctx.stroke();
+            }
+        }
+    };
+
+    MapPaint.RestrainedProceduralPencil = {
+        draw: function (ctx, point, previousPoint, sketch) {
+            MapPaint.ProceduralPencil.draw(ctx, point, previousPoint, sketch, 0.2);
+        }
+    };
 })(MapPaint || (MapPaint = {}));
 
 function lol() {

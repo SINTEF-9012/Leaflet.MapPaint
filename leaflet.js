@@ -148,11 +148,11 @@ L.MapPaint = L.Handler.extend({
 
         this.disableMapInteractions();
 
-        var ctx = canvas.getContext('2d');
+        this._context = canvas.getContext('2d');
 
-        this.pencil = new MapPaint.Sketchy(ctx);
+        this.pencil = new MapPaint.Sketchy(this._context);
 
-        this.pencil.retina = this._enhanceContext(ctx);
+        this.pencil.retina = this._enhanceContext(this._context);
 
         this.control = new MyControl();
         this.control.pencil = this.pencil;
@@ -168,6 +168,8 @@ L.MapPaint = L.Handler.extend({
         L.DomEvent.addListener(canvas, 'touchstart', this._onTouchStart, this);
         L.DomEvent.addListener(canvas, 'touchend', this._onTouchEnd, this);
         L.DomEvent.addListener(canvas, 'touchcancel', this._onTouchEnd, this);
+
+        this._map.on('resize', this._onResize, this);
     },
     _onMouseDown: function (e) {
         this.pencil.Start('mouse', { x: e.clientX, y: e.clientY });
@@ -183,7 +185,7 @@ L.MapPaint = L.Handler.extend({
     },
     _onMouseUp: function () {
         this.pencil.Stop('mouse');
-        L.DomEvent.removeListener(this._canvas, 'mousemove', this._onMouseMove);
+        L.DomEvent.removeListener(this._canvas, 'mousemove', this._onMouseMove, this);
     },
     _onTouchStart: function (e) {
         console.log('LAPPPIN');
@@ -266,7 +268,7 @@ L.MapPaint = L.Handler.extend({
             map.tap.enable();
         }
     },
-    _enhanceContext: function (context) {
+    _enhanceContext: function () {
         var canvas = this._canvas;
         var ratio = window.devicePixelRatio || 1, width = canvas.width, height = canvas.height;
 
@@ -275,10 +277,23 @@ L.MapPaint = L.Handler.extend({
             canvas.height = height * ratio;
             canvas.style.width = width + "px";
             canvas.style.height = height + "px";
-            context.scale(ratio, ratio);
+            this._context.scale(ratio, ratio);
             return ratio;
         }
         return 1.0;
+    },
+    _onResize: function (e) {
+        var canvas = this._canvas, ctx = this._context, imageData = ctx.getImageData(0, 0, canvas.width, canvas.height), container = this._map._container;
+
+        canvas.height = container.offsetHeight;
+        canvas.width = container.offsetWidth;
+
+        this._enhanceContext();
+        this.pencil.ClearDatagrid();
+
+        var center = e.newSize.subtract(e.oldSize).multiplyBy(0.5);
+
+        ctx.putImageData(imageData, center.x, center.y);
     }
 });
 
