@@ -96,7 +96,7 @@ module MapPaint {
 					}
 				}
 
-				ctx.closePath();
+				//ctx.closePath();
 				ctx.stroke();
 
 				ctx.beginPath();
@@ -117,7 +117,7 @@ module MapPaint {
 					}
 				}
 
-				ctx.closePath();
+				//ctx.closePath();
 				ctx.stroke();
 			}
 		}

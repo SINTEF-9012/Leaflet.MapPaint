@@ -518,7 +518,6 @@ var MapPaint;
                     }
                 }
 
-                ctx.closePath();
                 ctx.stroke();
 
                 ctx.beginPath();
@@ -539,7 +538,6 @@ var MapPaint;
                     }
                 }
 
-                ctx.closePath();
                 ctx.stroke();
             }
         }
@@ -571,7 +569,6 @@ var MapPaint;
             ctx.moveTo(previousPoint.x, previousPoint.y);
             ctx.quadraticCurveTo((previousPoint.x + point.x) * 0.5, (previousPoint.y + point.y) * 0.5, point.x, point.y);
 
-            ctx.closePath();
             ctx.stroke();
         }
     };
@@ -613,16 +610,32 @@ var MapPaint;
 
         _circlesPencilColor = color;
 
-        var patternCanvas = document.createElement('canvas'), ctx = patternCanvas.getContext('2d'), doublePI = Math.PI * 2, radius = 4, size = 12;
+        var patternCanvas = document.createElement('canvas'), ctx = patternCanvas.getContext('2d'), doublePI = Math.PI * 2, radius = 4, size = 20;
 
         patternCanvas.width = patternCanvas.height = size;
         ctx.fillStyle = color;
         ctx.beginPath();
 
-        ctx.arc(size / 2, size / 2, radius, 0, doublePI);
-
-        ctx.closePath();
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, doublePI);
         ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(0, size, radius, 0, doublePI);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(size, size, radius, 0, doublePI);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(size, 0, radius, 0, doublePI);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(size / 2, size / 2, radius + 1, 0, doublePI);
+        ctx.fill();
+
         return _circlesPencilPattern = ctx.createPattern(patternCanvas, 'repeat');
     };
 
@@ -637,7 +650,6 @@ var MapPaint;
             ctx.beginPath();
             ctx.moveTo(previousPoint.x, previousPoint.y);
             ctx.quadraticCurveTo((previousPoint.x + point.x) * 0.5, (previousPoint.y + point.y) * 0.5, point.x, point.y);
-            ctx.closePath();
 
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
@@ -671,7 +683,6 @@ var MapPaint;
             ctx.beginPath();
             ctx.moveTo(previousPoint.x, previousPoint.y);
             ctx.quadraticCurveTo((previousPoint.x + point.x) * 0.5, (previousPoint.y + point.y) * 0.5, point.x, point.y);
-            ctx.closePath();
 
             ctx.strokeStyle = sketch.color;
             ctx.lineWidth = 16;

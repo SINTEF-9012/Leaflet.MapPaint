@@ -43,20 +43,34 @@ module MapPaint {
 				ctx: CanvasRenderingContext2D = patternCanvas.getContext('2d'),
 				doublePI = Math.PI * 2,
 				radius = 4,
-				size = 12;
+				size = 20;
 
 			patternCanvas.width = patternCanvas.height = size;
 			ctx.fillStyle = color;
 			ctx.beginPath();
 
-			//ctx.arc(0, 0, radius, 0, doublePI);
-			//ctx.arc(0, size, radius, 0, doublePI);
-			//ctx.arc(size, size, radius, 0, doublePI);
-			//ctx.arc(size, 0, radius, 0, doublePI);
-			ctx.arc(size/2, size/2, radius, 0, doublePI);
-
-			ctx.closePath();
+			ctx.beginPath();
+			ctx.arc(0, 0, radius, 0, doublePI);
 			ctx.fill();
+
+			ctx.beginPath();
+			ctx.arc(0, size, radius, 0, doublePI);
+			ctx.fill();
+
+			ctx.beginPath();
+			ctx.arc(size, size, radius, 0, doublePI);
+			ctx.fill();
+
+			ctx.beginPath();
+			ctx.arc(size, 0, radius, 0, doublePI);
+			ctx.fill();
+
+			ctx.beginPath();
+			ctx.arc(size/2, size/2, radius+1, 0, doublePI);
+			ctx.fill();
+
+			//ctx.closePath();
+			//ctx.fill();
 			return _circlesPencilPattern = ctx.createPattern(patternCanvas, 'repeat');
 	};
 
@@ -77,7 +91,7 @@ module MapPaint {
 			ctx.beginPath();
 			ctx.moveTo(previousPoint.x, previousPoint.y);
 			ctx.quadraticCurveTo((previousPoint.x + point.x) * 0.5, (previousPoint.y + point.y) * 0.5, point.x, point.y);
-			ctx.closePath();
+			//ctx.closePath();
 
 			ctx.lineCap = 'round';
 			ctx.lineJoin = 'round';
