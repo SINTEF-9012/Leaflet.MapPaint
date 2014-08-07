@@ -7,7 +7,7 @@
 				speed = Math.sqrt(sdx * sdx + sdy * sdy);
 
 			var xa = 0,
-				ya = 30,
+				ya = 26,
 				xb = 80,
 				yb = 120;
 

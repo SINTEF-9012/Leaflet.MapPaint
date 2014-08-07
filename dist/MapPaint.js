@@ -128,6 +128,7 @@ L.MapPaint = L.Handler.extend({
 
         L.DomEvent.addListener(canvas, 'mousedown', this._onMouseDown, this);
         L.DomEvent.addListener(canvas, 'mouseup', this._onMouseUp, this);
+        L.DomEvent.addListener(canvas, 'mouseout', this._onMouseUp, this);
 
         L.DomEvent.addListener(canvas, 'touchstart', this._onTouchStart, this);
         L.DomEvent.addListener(canvas, 'touchend', this._onTouchEnd, this);
@@ -556,7 +557,7 @@ var MapPaint;
         draw: function (ctx, point, previousPoint, sketch) {
             var sdx = previousPoint.x - point.x, sdy = previousPoint.y - point.y, speed = Math.sqrt(sdx * sdx + sdy * sdy);
 
-            var xa = 0, ya = 30, xb = 80, yb = 120;
+            var xa = 0, ya = 26, xb = 80, yb = 120;
 
             var w = Math.floor(ya + (Math.min(speed, xb) - xa) * ((yb - ya) / (xb - xa)));
             ctx.globalCompositeOperation = 'destination-out';
@@ -584,7 +585,7 @@ var MapPaint;
 
         _stripesPencilColor = color;
 
-        var patternCanvas = document.createElement('canvas'), dotWidth = 20, dotDistance = 5, ctx = patternCanvas.getContext('2d');
+        var patternCanvas = document.createElement('canvas'), ctx = patternCanvas.getContext('2d');
 
         patternCanvas.width = patternCanvas.height = 12;
         ctx.strokeStyle = color;
@@ -605,25 +606,61 @@ var MapPaint;
         return _stripesPencilPattern = ctx.createPattern(patternCanvas, 'repeat');
     };
 
+    var _circlesPencilPattern, _circlesPencilColor, _circlesPencilGetPattern = function (color) {
+        if (_circlesPencilPattern && _circlesPencilColor === color) {
+            return _circlesPencilPattern;
+        }
+
+        _circlesPencilColor = color;
+
+        var patternCanvas = document.createElement('canvas'), ctx = patternCanvas.getContext('2d'), doublePI = Math.PI * 2, radius = 4, size = 12;
+
+        patternCanvas.width = patternCanvas.height = size;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+
+        ctx.arc(size / 2, size / 2, radius, 0, doublePI);
+
+        ctx.closePath();
+        ctx.fill();
+        return _circlesPencilPattern = ctx.createPattern(patternCanvas, 'repeat');
+    };
+
     MapPaint.StripesPencil = {
-        draw: function (ctx, point, previousPoint, sketch) {
+        draw: function (ctx, point, previousPoint, sketch, circle) {
             var sdx = previousPoint.x - point.x, sdy = previousPoint.y - point.y, speed = Math.sqrt(sdx * sdx + sdy * sdy);
 
-            var xa = 0, ya = 30, xb = 75, yb = 120;
+            var xa = 0, ya = 26, xb = 80, yb = 60;
 
             var w = Math.floor(ya + (Math.min(speed, xb) - xa) * ((yb - ya) / (xb - xa)));
 
             ctx.beginPath();
-            ctx.strokeStyle = _stripesPencilGetPattern(sketch.colorFull);
-            ctx.lineWidth = w;
+            ctx.moveTo(previousPoint.x, previousPoint.y);
+            ctx.quadraticCurveTo((previousPoint.x + point.x) * 0.5, (previousPoint.y + point.y) * 0.5, point.x, point.y);
+            ctx.closePath();
+
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            ctx.moveTo(previousPoint.x, previousPoint.y);
-
-            ctx.quadraticCurveTo((previousPoint.x + point.x) * 0.5, (previousPoint.y + point.y) * 0.5, point.x, point.y);
+            var tmpGlobalCompositeOperation = ctx.globalCompositeOperation;
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = w - 1;
 
             ctx.stroke();
+
+            ctx.strokeStyle = circle ? _circlesPencilGetPattern(sketch.colorFull) : _stripesPencilGetPattern(sketch.colorFull);
+            ctx.lineWidth = w;
+
+            ctx.globalCompositeOperation = tmpGlobalCompositeOperation;
+
+            ctx.stroke();
+        }
+    };
+
+    MapPaint.CirclesPencil = {
+        draw: function (ctx, point, previousPoint, sketch) {
+            MapPaint.StripesPencil.draw(ctx, point, previousPoint, sketch, true);
         }
     };
 })(MapPaint || (MapPaint = {}));
@@ -632,23 +669,20 @@ var MapPaint;
     MapPaint.UglyFeltPen = {
         draw: function (ctx, point, previousPoint, sketch) {
             ctx.beginPath();
+            ctx.moveTo(previousPoint.x, previousPoint.y);
+            ctx.quadraticCurveTo((previousPoint.x + point.x) * 0.5, (previousPoint.y + point.y) * 0.5, point.x, point.y);
+            ctx.closePath();
+
             ctx.strokeStyle = sketch.color;
             ctx.lineWidth = 16;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
-
-            ctx.moveTo(previousPoint.x, previousPoint.y);
-            ctx.lineTo(point.x, point.y);
 
             ctx.stroke();
 
             ctx.lineWidth = 14;
             ctx.strokeStyle = sketch.colorFull;
 
-            ctx.moveTo(previousPoint.x, previousPoint.y);
-            ctx.lineTo(point.x, point.y);
-
-            ctx.closePath();
             ctx.stroke();
         }
     };

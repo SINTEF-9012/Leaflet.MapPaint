@@ -32,6 +32,7 @@ L.MapPaint = L.Handler.extend({
 
 		L.DomEvent.addListener(canvas, 'mousedown', this._onMouseDown, this);
 		L.DomEvent.addListener(canvas, 'mouseup', this._onMouseUp, this);
+		L.DomEvent.addListener(canvas, 'mouseout', this._onMouseUp, this);
 
 		L.DomEvent.addListener(canvas, 'touchstart', this._onTouchStart, this);
 		L.DomEvent.addListener(canvas, 'touchend', this._onTouchEnd, this);
