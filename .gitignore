@@ -1,1 +1,11 @@
-bower_components
+bower_components/
+node_modules/
+.tscache/
+obj/
+bin/
+*.js
+*.js.map
+!dist/*.js
+!dist/*js.map
+MapPaint.min.js.map
+!Gruntfile.js
