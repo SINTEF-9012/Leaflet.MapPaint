@@ -656,11 +656,12 @@ var MapPaint;
 
     MapPaint.CrayonPencil = {
         draw: function (ctx, point, previousPoint, sketch) {
+            var r = sketch.retina > 1.0 ? 0.66 : 1.0;
             var pattern = crayonPencilGetPattern(sketch.colorFull, 1);
-            MapPaint.drawPatternPencil(ctx, point, previousPoint, sketch, pattern, 0.25);
+            MapPaint.drawPatternPencil(ctx, point, previousPoint, sketch, pattern, 0.25 * r);
 
             pattern = crayonPencilGetPattern(sketch.colorFull, 2);
-            MapPaint.drawPatternPencil(ctx, point, previousPoint, sketch, pattern, 0.15);
+            MapPaint.drawPatternPencil(ctx, point, previousPoint, sketch, pattern, 0.15 * r);
         }
     };
 })(MapPaint || (MapPaint = {}));

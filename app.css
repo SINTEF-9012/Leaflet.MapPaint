@@ -40,16 +40,19 @@ canvas {
 	border-radius: 4px;
 	padding: 4px;
 	width: 240px;
-	display: flex;
+	/*display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
-	/*justify-content: space-between;*/
+	justify-content: space-between;*/
 	position: relative;
 	z-index: 3;
 }
 
 .leaflet-left .mappaint-control > div {
 	width: auto;
+}
+.mappaint-control > div > * {
+	display: inline-block;
 }
 
 .mappaint-color, .mappaint-eraser {
@@ -60,7 +63,7 @@ canvas {
 	/*box-shadow: -1px -1px 6px rgba(0, 0, 0, 0.55) inset, 0px 0px 3px rgba(0,0,0,0.3);*/
 	box-shadow: -3px -4px 0px 0px rgba(0, 0, 0, 0.35) inset, 2px 2px 0px 0px rgba(255,255,255,0.3) inset;
 	cursor: pointer;
-	flex-shrink: 0;
+	/*flex-shrink: 0;*/
 }
 
 .mappaint-color.selected {
@@ -86,9 +89,13 @@ canvas {
 	-webkit-transform: rotate(-45deg);
 	-moz-transform: rotate(-45deg);
 	transform: rotate(-45deg);
-	margin-top: 8px;
+	margin-top: 0px;
 	/* margin-bottom: 1em; */
 	width: 32px;
+	position: relative;
+	top: 10px;
+	margin-right: 10px;
+	margin-left: 10px;
 }
 
 .mappaint-eraser.selected {
@@ -146,13 +153,16 @@ canvas {
 	background: rgb(95, 98, 100);
 	border: 0;
 	width: 60px;
-	display: block;
 	border-radius: 4px;
 	color: white;
 	box-shadow: -2px -2px 0 1px rgba(0,0,0,0.5) inset;
 	height: 36px;
 	margin: 2px;
 	padding: 4px;
+}
+.mappaint-control .action-button-save:active {
+	background: rgb(82, 84, 86);
+	box-shadow: 2px 2px 0 1px rgba(0,0,0,0.5) inset;
 }
 
 .mappaint-pencil {

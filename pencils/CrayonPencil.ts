@@ -86,11 +86,12 @@ module MapPaint {
 
 	export var CrayonPencil : Pencil = {
 		draw: (ctx: CanvasRenderingContext2D, point: PaintPoint, previousPoint: PaintPoint, sketch: Sketchy) => {
+			var r = sketch.retina > 1.0 ? 0.66 : 1.0;
 			var pattern = crayonPencilGetPattern(sketch.colorFull, 1);
-			drawPatternPencil(ctx, point, previousPoint, sketch, pattern, 0.25);
+			drawPatternPencil(ctx, point, previousPoint, sketch, pattern, 0.25 * r);
 
 			pattern = crayonPencilGetPattern(sketch.colorFull, 2);
-			drawPatternPencil(ctx, point, previousPoint, sketch, pattern, 0.15);
+			drawPatternPencil(ctx, point, previousPoint, sketch, pattern, 0.15 * r);
 		}
 	};
  }
