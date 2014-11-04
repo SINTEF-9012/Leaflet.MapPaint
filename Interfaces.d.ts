@@ -53,7 +53,7 @@ declare module MapPaint {
 
 declare module L {
 	export interface IMapPaint extends L.IHandler {
-		
+		saveMethod: (image: string, bounds: L.LatLngBounds) => void;
 	}
 
 	export var MapPaint: IMapPaint;

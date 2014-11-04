@@ -1,3 +1,4 @@
+/// <reference path="uglyfeltpen.ts" />
  module MapPaint {
 	export var Rubber: Pencil = {
 		draw: (ctx: CanvasRenderingContext2D, point: PaintPoint, previousPoint: PaintPoint, sketch: Sketchy) => {

@@ -27,8 +27,29 @@ canvas {
 }
 
 .mappaint-control {
+	-webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.mappaint-control > div {
 	background: rgba(255,255,255,0.66);
 	border-radius: 4px;
+	padding: 4px;
+	width: 240px;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	/*justify-content: space-between;*/
+	position: relative;
+	z-index: 3;
+}
+
+.leaflet-left .mappaint-control > div {
+	width: auto;
 }
 
 .mappaint-color, .mappaint-eraser {
@@ -39,6 +60,7 @@ canvas {
 	/*box-shadow: -1px -1px 6px rgba(0, 0, 0, 0.55) inset, 0px 0px 3px rgba(0,0,0,0.3);*/
 	box-shadow: -3px -4px 0px 0px rgba(0, 0, 0, 0.35) inset, 2px 2px 0px 0px rgba(255,255,255,0.3) inset;
 	cursor: pointer;
+	flex-shrink: 0;
 }
 
 .mappaint-color.selected {
@@ -60,12 +82,13 @@ canvas {
 	background: -moz-linear-gradient(left, #5981D8 39%, rgb(255, 0, 61) 39%);
 	background: linear-gradient(left, #5981D8 39%, rgb(255, 0, 61) 39%);
 	border-radius: 20% 30%;
-	height: 2em;
+	height: 22px;
 	-webkit-transform: rotate(-45deg);
 	-moz-transform: rotate(-45deg);
 	transform: rotate(-45deg);
-	margin-top: 1em;
-	margin-bottom: 1em;
+	margin-top: 8px;
+	/* margin-bottom: 1em; */
+	width: 32px;
 }
 
 .mappaint-eraser.selected {
@@ -92,24 +115,60 @@ canvas {
 	cursor: pointer;
 	height: 25px;
 	width: 25px;
-	background: #3F51B5;
-	margin-top: 5px;
-	margin-left: 5px;
+	background: #2C4E74;
+	margin-top: 8px;
+	margin-left: 9px;
 	margin-bottom: 15px;	
+	border-radius: 3px;
+	box-shadow: 1px 1px 0px 2px rgba(0, 0, 0, 0.13) inset;
+	flex-shrink: 0;
+	margin-right: 11px;
 }
 
 .mappaint-filler:after {
 	content: "\00a0";
 	height: 25px;
 	width: 25px;
-	background: red;
+	background: #FF2400;
 	border-radius: 50%;
 	display: block;
 	position: relative;
 	top: 8px;
 	left: 8px;
+	box-shadow: 1px 1px 0px 2px rgba(255, 255, 255, 0.3) inset;
 }
 
 .mappaint-filler.enabled:after {
 	z-index: -1;
+}
+
+.mappaint-control .action-button-save {
+	background: rgb(95, 98, 100);
+	border: 0;
+	width: 60px;
+	display: block;
+	border-radius: 4px;
+	color: white;
+	box-shadow: -2px -2px 0 1px rgba(0,0,0,0.5) inset;
+	height: 36px;
+	margin: 2px;
+	padding: 4px;
+}
+
+.mappaint-pencil {
+	margin: 2px;
+	background: white;
+	text-align: center;
+	padding: 4px 12px;
+	border-radius: 4px;
+	height: 28px;
+	line-height: 28px;
+	min-width: 48px;
+	box-shadow: -2px -1px 0px 1px rgba(0,0,0,0.1) inset;
+	cursor: pointer;
+}
+
+.mappaint-pencil.selected {
+	font-weight: bold;
+	background: rgb(240, 240, 240);
 }

@@ -23,7 +23,9 @@ module MapPaint {
 
 		onAdd: function (/*map*/) {
 			// create the control container with a particular class name
-			var container = L.DomUtil.create('div', 'mappaint-control');
+			var parentContainer = L.DomUtil.create('div', 'mappaint-control');
+			var container = L.DomUtil.create('div', '');
+			parentContainer.appendChild(container);
 
 			var eraserMode = false,
 				fillerMode = false;
@@ -53,58 +55,34 @@ module MapPaint {
 			var previousC = <HTMLElement> container.firstChild;
 			previousC.onclick(null);
 
-			var eraser = L.DomUtil.create('div', 'mappaint-eraser');
-
-			eraser.onclick = () => {
-				this.pencil.EnableEraser();
-				eraserMode = true;
-				if (previousC) {
-					previousC.classList.remove('selected');
-				}
-				eraser.classList.add('selected');
-				previousC = eraser;
-
-				return false;
-			}
-
-			container.appendChild(eraser);
-
-			var filler = L.DomUtil.create('div', 'mappaint-filler');
-
-			filler.onclick = () => {
-				fillerMode = !fillerMode;
-				if (fillerMode) {
-					this.pencil.EnableFiller();
-					filler.classList.add('enabled');
-				} else {
-					this.pencil.DisableFiller();
-					filler.classList.remove('enabled');
-				}
-
-				return false;
-			};
-
-			container.appendChild(filler);
-
-			return container;
+			return parentContainer;
 		}
 	});
 
-	export var SaveControl = L.Control.extend({
+	export var ActionControl = L.Control.extend({
 		options: {
-			position: 'topleft'
+			position: 'topleft',
+			pencils: [
+				{ name: "Felt", obj: "UglyFeltPen" },
+				{ name: "Crayon", obj: "CrayonPencil" },
+				{ name: "Procedural", obj: "ProceduralPencil" },
+				{ name: "Circles", obj: "CirclesPencil" },
+				{ name: "Stripes", obj: "StripesPencil" }
+			]
 		},
 
 		onAdd: function(map: L.Map) {
 			// create the control container with a particular class name
-			var container = L.DomUtil.create('div', 'leaflet-bar leaflet-mappaint');
-			/*
-			var btn = L.DomUtil.create('button', 'lol');
-			btn.appendChild(document.createTextNode('plop'));
+			var parentContainer = L.DomUtil.create('div', 'mappaint-control');
+			var container = L.DomUtil.create('div', '');
+			parentContainer.appendChild(container);
 
-			L.DomEvent.addListener(btn, 'click', () => {
+			var btnSave = L.DomUtil.create('button', 'action-button action-button-save');
+			btnSave.appendChild(document.createTextNode('Save'));
+
+			L.DomEvent.addListener(btnSave, 'click', () => {
 				var pencil : MapPaint.Sketchy = this.pencil;
-				s = new MapPaint.Save(pencil.context, 128, pencil.retina)
+				/*s = new MapPaint.Save(pencil.context, 128, pencil.retina)
 				a = s.MergeModifiedAreas(pencil.dataGrid._modifiedAreas)
 				b = s.CroppedDrawAreas(a)
 				s.DrawAreas(b);
@@ -127,12 +105,96 @@ module MapPaint {
 					L.imageOverlay(image, leafletBounds).addTo(map);
 				}
 
+				pencil.Clear();*/
+
+				var context = (<any>pencil).context;
+				var s = new MapPaint.Save(context, 128, pencil.retina);
+
+				var imageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
+				var croppedSize = s.CropImageData(imageData);
+
+				if (!croppedSize) {
+					return;
+				}
+
+				var png = s.CreatePngs([croppedSize]); 
+				if (png.length && png[0]) {
+					var leafletBounds = new L.LatLngBounds(
+						map.containerPointToLatLng(new L.Point(croppedSize.xMin, croppedSize.yMin)),
+						map.containerPointToLatLng(new L.Point(croppedSize.xMax, croppedSize.yMax))
+					);
+
+					this.mappaint.saveMethod(png[0], leafletBounds);
+				}
+
 				pencil.Clear();
 			});
 
-			container.appendChild(btn);*/
+			container.appendChild(btnSave);
+			
+			/*var filler = L.DomUtil.create('div', 'mappaint-filler');
 
-			return container;
+			filler.onclick = () => {
+				fillerMode = !fillerMode;
+				if (fillerMode) {
+					this.pencil.EnableFiller();
+					filler.classList.add('enabled');
+				} else {
+					this.pencil.DisableFiller();
+					filler.classList.remove('enabled');
+				}
+
+				return false;
+			};
+
+			container.appendChild(filler);*/
+
+			var eraserMode = false,
+				fillerMode = false;
+
+
+			var eraser = L.DomUtil.create('div', 'mappaint-eraser');
+
+			eraser.onclick = () => {
+				this.pencil.EnableEraser();
+				eraserMode = true;
+				if (previousC) {
+					previousC.classList.remove('selected');
+				}
+				eraser.classList.add('selected');
+				previousC = eraser;
+
+				return false;
+			}
+
+			container.appendChild(eraser);
+
+			this.options.pencils.forEach((pencil) => {
+				var c = L.DomUtil.create('div', 'mappaint-pencil');
+				c.appendChild(document.createTextNode(pencil.name));
+				container.appendChild(c);
+				c.onclick = () => {
+					if (eraserMode) {
+						this.pencil.DisableEraser();
+						eraserMode = false;
+					}
+
+					if (previousC) {
+						previousC.classList.remove('selected');
+					}
+
+					c.classList.add('selected');
+					this.pencil.pencil = MapPaint[pencil.obj];
+
+					previousC = c;
+					return false;
+				}
+			});
+
+			var previousC = <HTMLElement> container.children[2];
+			previousC.onclick(null);
+
+			return parentContainer;
 		}
 	});
 

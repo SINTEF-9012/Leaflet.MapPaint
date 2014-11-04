@@ -26,9 +26,10 @@ L.MapPaint = L.Handler.extend({
 		this.colorControl.pencil = this.pencil;
 		this._map.addControl(this.colorControl);
 
-		this.saveControl = new MapPaint.SaveControl();
-		this.saveControl.pencil = this.pencil;
-		this._map.addControl(this.saveControl);
+		this.actionControl = new MapPaint.ActionControl();
+		this.actionControl.pencil = this.pencil;
+		this.actionControl.mappaint = this;
+		this._map.addControl(this.actionControl);
 
 		L.DomEvent.addListener(canvas, 'mousedown', this._onMouseDown, this);
 		L.DomEvent.addListener(canvas, 'mouseup', this._onMouseUp, this);
@@ -38,10 +39,18 @@ L.MapPaint = L.Handler.extend({
 		L.DomEvent.addListener(canvas, 'touchend', this._onTouchEnd, this);
 		L.DomEvent.addListener(canvas, 'touchcancel', this._onTouchEnd, this);
 
+		L.DomEvent.addListener(canvas, 'contextmenu', (e) => e.preventDefault() && false);
+
 		this._map.on('resize', this._onResize, this);
 	},
 
 	_onMouseDown: function (e: MouseEvent) {
+		if (e.button) {
+			this.pencil.EnableFiller();
+		} else {
+			this.pencil.DisableFiller();
+		}
+
 		this.pencil.Start('mouse', { x: e.clientX, y: e.clientY });
 
 		L.DomEvent.addListener(this._canvas, 'mousemove', this._onMouseMove, this);
@@ -55,9 +64,10 @@ L.MapPaint = L.Handler.extend({
 		e.preventDefault();
 	},
 
-	_onMouseUp: function () {
+	_onMouseUp: function (e: MouseEvent) {
 		this.pencil.Stop('mouse');
 		L.DomEvent.removeListener(this._canvas, 'mousemove', this._onMouseMove, this);
+		e.preventDefault();
 	},
 
 	_onTouchStart: function (e: TouchEvent) {
@@ -179,6 +189,17 @@ L.MapPaint = L.Handler.extend({
 		var center = e.newSize.subtract(e.oldSize).multiplyBy(0.5);
 
 		ctx.putImageData(imageData, center.x, center.y);
+	},
+
+	disable: function () {
+		this._map._container.removeChild(this._canvas);
+		this._map.removeControl(this.actionControl);
+		this._map.removeControl(this.colorControl);
+		this.restoreMapInteractions();
+	},
+
+	saveMethod: function(image, bounds) {
+		L.imageOverlay(image, bounds).addTo(this._map);
 	}
 });
 

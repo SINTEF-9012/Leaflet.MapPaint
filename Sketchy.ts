@@ -31,7 +31,7 @@ module MapPaint {
 
 			this.SetColor(0, 0, 0);
 
-			this.pencil = ProceduralPencil;
+			this.pencil = CrayonPencil;
 		}
 
 		public SetColor(r: number, g: number, b: number) {

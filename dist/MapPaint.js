@@ -21,7 +21,9 @@ var MapPaint;
         },
         onAdd: function () {
             var _this = this;
-            var container = L.DomUtil.create('div', 'mappaint-control');
+            var parentContainer = L.DomUtil.create('div', 'mappaint-control');
+            var container = L.DomUtil.create('div', '');
+            parentContainer.appendChild(container);
 
             var eraserMode = false, fillerMode = false;
 
@@ -50,6 +52,57 @@ var MapPaint;
             var previousC = container.firstChild;
             previousC.onclick(null);
 
+            return parentContainer;
+        }
+    });
+
+    MapPaint.ActionControl = L.Control.extend({
+        options: {
+            position: 'topleft',
+            pencils: [
+                { name: "Felt", obj: "UglyFeltPen" },
+                { name: "Crayon", obj: "CrayonPencil" },
+                { name: "Procedural", obj: "ProceduralPencil" },
+                { name: "Circles", obj: "CirclesPencil" },
+                { name: "Stripes", obj: "StripesPencil" }
+            ]
+        },
+        onAdd: function (map) {
+            var _this = this;
+            var parentContainer = L.DomUtil.create('div', 'mappaint-control');
+            var container = L.DomUtil.create('div', '');
+            parentContainer.appendChild(container);
+
+            var btnSave = L.DomUtil.create('button', 'action-button action-button-save');
+            btnSave.appendChild(document.createTextNode('Save'));
+
+            L.DomEvent.addListener(btnSave, 'click', function () {
+                var pencil = _this.pencil;
+
+                var context = pencil.context;
+                var s = new MapPaint.Save(context, 128, pencil.retina);
+
+                var imageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
+                var croppedSize = s.CropImageData(imageData);
+
+                if (!croppedSize) {
+                    return;
+                }
+
+                var png = s.CreatePngs([croppedSize]);
+                if (png.length && png[0]) {
+                    var leafletBounds = new L.LatLngBounds(map.containerPointToLatLng(new L.Point(croppedSize.xMin, croppedSize.yMin)), map.containerPointToLatLng(new L.Point(croppedSize.xMax, croppedSize.yMax)));
+
+                    _this.mappaint.saveMethod(png[0], leafletBounds);
+                }
+
+                pencil.Clear();
+            });
+
+            container.appendChild(btnSave);
+
+            var eraserMode = false, fillerMode = false;
+
             var eraser = L.DomUtil.create('div', 'mappaint-eraser');
 
             eraser.onclick = function () {
@@ -66,35 +119,32 @@ var MapPaint;
 
             container.appendChild(eraser);
 
-            var filler = L.DomUtil.create('div', 'mappaint-filler');
+            this.options.pencils.forEach(function (pencil) {
+                var c = L.DomUtil.create('div', 'mappaint-pencil');
+                c.appendChild(document.createTextNode(pencil.name));
+                container.appendChild(c);
+                c.onclick = function () {
+                    if (eraserMode) {
+                        _this.pencil.DisableEraser();
+                        eraserMode = false;
+                    }
 
-            filler.onclick = function () {
-                fillerMode = !fillerMode;
-                if (fillerMode) {
-                    _this.pencil.EnableFiller();
-                    filler.classList.add('enabled');
-                } else {
-                    _this.pencil.DisableFiller();
-                    filler.classList.remove('enabled');
-                }
+                    if (previousC) {
+                        previousC.classList.remove('selected');
+                    }
 
-                return false;
-            };
+                    c.classList.add('selected');
+                    _this.pencil.pencil = MapPaint[pencil.obj];
 
-            container.appendChild(filler);
+                    previousC = c;
+                    return false;
+                };
+            });
 
-            return container;
-        }
-    });
+            var previousC = container.children[2];
+            previousC.onclick(null);
 
-    MapPaint.SaveControl = L.Control.extend({
-        options: {
-            position: 'topleft'
-        },
-        onAdd: function (map) {
-            var container = L.DomUtil.create('div', 'leaflet-bar leaflet-mappaint');
-
-            return container;
+            return parentContainer;
         }
     });
 })(MapPaint || (MapPaint = {}));
@@ -122,9 +172,10 @@ L.MapPaint = L.Handler.extend({
         this.colorControl.pencil = this.pencil;
         this._map.addControl(this.colorControl);
 
-        this.saveControl = new MapPaint.SaveControl();
-        this.saveControl.pencil = this.pencil;
-        this._map.addControl(this.saveControl);
+        this.actionControl = new MapPaint.ActionControl();
+        this.actionControl.pencil = this.pencil;
+        this.actionControl.mappaint = this;
+        this._map.addControl(this.actionControl);
 
         L.DomEvent.addListener(canvas, 'mousedown', this._onMouseDown, this);
         L.DomEvent.addListener(canvas, 'mouseup', this._onMouseUp, this);
@@ -134,9 +185,19 @@ L.MapPaint = L.Handler.extend({
         L.DomEvent.addListener(canvas, 'touchend', this._onTouchEnd, this);
         L.DomEvent.addListener(canvas, 'touchcancel', this._onTouchEnd, this);
 
+        L.DomEvent.addListener(canvas, 'contextmenu', function (e) {
+            return e.preventDefault() && false;
+        });
+
         this._map.on('resize', this._onResize, this);
     },
     _onMouseDown: function (e) {
+        if (e.button) {
+            this.pencil.EnableFiller();
+        } else {
+            this.pencil.DisableFiller();
+        }
+
         this.pencil.Start('mouse', { x: e.clientX, y: e.clientY });
 
         L.DomEvent.addListener(this._canvas, 'mousemove', this._onMouseMove, this);
@@ -148,9 +209,10 @@ L.MapPaint = L.Handler.extend({
 
         e.preventDefault();
     },
-    _onMouseUp: function () {
+    _onMouseUp: function (e) {
         this.pencil.Stop('mouse');
         L.DomEvent.removeListener(this._canvas, 'mousemove', this._onMouseMove, this);
+        e.preventDefault();
     },
     _onTouchStart: function (e) {
         console.log('LAPPPIN');
@@ -259,6 +321,15 @@ L.MapPaint = L.Handler.extend({
         var center = e.newSize.subtract(e.oldSize).multiplyBy(0.5);
 
         ctx.putImageData(imageData, center.x, center.y);
+    },
+    disable: function () {
+        this._map._container.removeChild(this._canvas);
+        this._map.removeControl(this.actionControl);
+        this._map.removeControl(this.colorControl);
+        this.restoreMapInteractions();
+    },
+    saveMethod: function (image, bounds) {
+        L.imageOverlay(image, bounds).addTo(this._map);
     }
 });
 
@@ -365,7 +436,7 @@ var MapPaint;
 
             this.SetColor(0, 0, 0);
 
-            this.pencil = MapPaint.ProceduralPencil;
+            this.pencil = MapPaint.CrayonPencil;
         }
         Sketchy.prototype.SetColor = function (r, g, b) {
             var c = 'rgba(' + r + ',' + g + ',' + b;
@@ -464,6 +535,137 @@ var MapPaint;
 })(MapPaint || (MapPaint = {}));
 var MapPaint;
 (function (MapPaint) {
+    var circlesPencilPattern, circlesPencilColor, circlesPencilGetPattern = function (color) {
+        if (circlesPencilPattern && circlesPencilColor === color) {
+            return circlesPencilPattern;
+        }
+
+        circlesPencilColor = color;
+
+        var patternCanvas = document.createElement('canvas'), ctx = patternCanvas.getContext('2d'), doublePI = Math.PI * 2, radius = 4, size = 20;
+
+        patternCanvas.width = patternCanvas.height = size;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, doublePI);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(0, size, radius, 0, doublePI);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(size, size, radius, 0, doublePI);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(size, 0, radius, 0, doublePI);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(size / 2, size / 2, radius + 1, 0, doublePI);
+        ctx.fill();
+
+        return circlesPencilPattern = ctx.createPattern(patternCanvas, 'repeat');
+    };
+
+    MapPaint.CirclesPencil = {
+        draw: function (ctx, point, previousPoint, sketch) {
+            var pattern = circlesPencilGetPattern(sketch.colorFull);
+            MapPaint.drawPatternPencil(ctx, point, previousPoint, sketch, pattern);
+        }
+    };
+})(MapPaint || (MapPaint = {}));
+var MapPaint;
+(function (MapPaint) {
+    var crayonPencilPattern, crayonPencilColor, crayonPencilPattern2, crayonPencilColor2, crayonPencilGetPattern = function (color, mode) {
+        if (mode === 1 && crayonPencilPattern && crayonPencilColor === color) {
+            return crayonPencilPattern;
+        }
+
+        if (mode === 2 && crayonPencilPattern2 && crayonPencilColor2 === color) {
+            return crayonPencilPattern2;
+        }
+
+        if (mode === 1) {
+            crayonPencilColor = color;
+        } else if (mode == 2) {
+            crayonPencilColor2 = color;
+        }
+
+        var patternCanvas = document.createElement('canvas'), ctx = patternCanvas.getContext('2d'), size = 40;
+
+        patternCanvas.width = patternCanvas.height = size;
+
+        ctx.fillStyle = color;
+        ctx.fillRect(0, 0, size, size);
+
+        var imageData = ctx.getImageData(0, 0, size, size), random = Math.random, pixels = imageData.data;
+
+        for (var i = 0, n = pixels.length; i < n; i += 4) {
+            pixels[i + 3] = (random() * 256) | 0;
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+
+        var rogerCanvas = document.createElement('canvas'), rogerCtx = rogerCanvas.getContext('2d');
+
+        var biggerSize = size * 2;
+        rogerCanvas.width = rogerCanvas.height = biggerSize;
+
+        rogerCtx.drawImage(patternCanvas, 0, 0, size, size, 0, 0, biggerSize, biggerSize);
+
+        size = biggerSize;
+
+        imageData = rogerCtx.getImageData(0, 0, size, size);
+        pixels = imageData.data;
+
+        var max = mode === 1 ? 142 : 202;
+
+        var lockupCurveTable = new Array(256);
+
+        var iL = 0;
+        for (; iL < max - 25; ++iL) {
+            lockupCurveTable[iL] = 255;
+        }
+
+        for (var cptIL = 0; iL < max + 25; ++iL & ++cptIL) {
+            lockupCurveTable[iL] = 255 - cptIL * 5;
+        }
+
+        for (; iL < 256; ++iL) {
+            lockupCurveTable[iL] = 0;
+        }
+
+        for (var x = 0; x < size; ++x) {
+            for (var y = 0; y < size; ++y) {
+                var i = ((x * size + y) << 2) + 3;
+                pixels[i] = lockupCurveTable[pixels[i]];
+            }
+        }
+        rogerCtx.putImageData(imageData, 0, 0);
+
+        if (mode === 1) {
+            return crayonPencilPattern = ctx.createPattern(rogerCanvas, 'repeat');
+        } else {
+            return crayonPencilPattern2 = ctx.createPattern(rogerCanvas, 'repeat');
+        }
+    };
+
+    MapPaint.CrayonPencil = {
+        draw: function (ctx, point, previousPoint, sketch) {
+            var pattern = crayonPencilGetPattern(sketch.colorFull, 1);
+            MapPaint.drawPatternPencil(ctx, point, previousPoint, sketch, pattern, 0.25);
+
+            pattern = crayonPencilGetPattern(sketch.colorFull, 2);
+            MapPaint.drawPatternPencil(ctx, point, previousPoint, sketch, pattern, 0.15);
+        }
+    };
+})(MapPaint || (MapPaint = {}));
+var MapPaint;
+(function (MapPaint) {
     MapPaint.ProceduralPencil = {
         draw: function (ctx, point, previousPoint, sketch, maxAngle) {
             var sdx = previousPoint.x - point.x, sdy = previousPoint.y - point.y, speed = sdx * sdx + sdy * sdy;
@@ -551,6 +753,28 @@ var MapPaint;
 })(MapPaint || (MapPaint = {}));
 var MapPaint;
 (function (MapPaint) {
+    MapPaint.UglyFeltPen = {
+        draw: function (ctx, point, previousPoint, sketch) {
+            ctx.beginPath();
+            ctx.moveTo(previousPoint.x, previousPoint.y);
+            ctx.quadraticCurveTo((previousPoint.x + point.x) * 0.5, (previousPoint.y + point.y) * 0.5, point.x, point.y);
+
+            ctx.strokeStyle = sketch.color;
+            ctx.lineWidth = 14;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            ctx.stroke();
+
+            ctx.lineWidth = 12;
+            ctx.strokeStyle = sketch.colorFull;
+
+            ctx.stroke();
+        }
+    };
+})(MapPaint || (MapPaint = {}));
+var MapPaint;
+(function (MapPaint) {
     MapPaint.Rubber = {
         draw: function (ctx, point, previousPoint, sketch) {
             var sdx = previousPoint.x - point.x, sdy = previousPoint.y - point.y, speed = Math.sqrt(sdx * sdx + sdy * sdy);
@@ -575,12 +799,42 @@ var MapPaint;
 })(MapPaint || (MapPaint = {}));
 var MapPaint;
 (function (MapPaint) {
-    var _stripesPencilPattern, _stripesPencilColor, _stripesPencilGetPattern = function (color) {
-        if (_stripesPencilPattern && _stripesPencilColor === color) {
-            return _stripesPencilPattern;
+    MapPaint.drawPatternPencil = function (ctx, point, previousPoint, sketch, pattern, widthRatio) {
+        if (typeof widthRatio === "undefined") { widthRatio = 1.0; }
+        var sdx = previousPoint.x - point.x, sdy = previousPoint.y - point.y, speed = Math.sqrt(sdx * sdx + sdy * sdy);
+
+        var xa = 0, ya = 26, xb = 80, yb = 60;
+
+        var w = widthRatio * Math.floor(ya + (Math.min(speed, xb) - xa) * ((yb - ya) / (xb - xa)));
+
+        ctx.beginPath();
+        ctx.moveTo(previousPoint.x, previousPoint.y);
+        ctx.quadraticCurveTo((previousPoint.x + point.x) * 0.5, (previousPoint.y + point.y) * 0.5, point.x, point.y);
+
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        var tmpGlobalCompositeOperation = ctx.globalCompositeOperation;
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = w - 1;
+
+        ctx.stroke();
+
+        ctx.strokeStyle = pattern;
+        ctx.lineWidth = w;
+
+        ctx.globalCompositeOperation = tmpGlobalCompositeOperation;
+
+        ctx.stroke();
+    };
+
+    var stripesPencilPattern, stripesPencilColor, stripesPencilGetPattern = function (color) {
+        if (stripesPencilPattern && stripesPencilColor === color) {
+            return stripesPencilPattern;
         }
 
-        _stripesPencilColor = color;
+        stripesPencilColor = color;
 
         var patternCanvas = document.createElement('canvas'), ctx = patternCanvas.getContext('2d');
 
@@ -600,101 +854,13 @@ var MapPaint;
 
         ctx.closePath();
         ctx.stroke();
-        return _stripesPencilPattern = ctx.createPattern(patternCanvas, 'repeat');
-    };
-
-    var _circlesPencilPattern, _circlesPencilColor, _circlesPencilGetPattern = function (color) {
-        if (_circlesPencilPattern && _circlesPencilColor === color) {
-            return _circlesPencilPattern;
-        }
-
-        _circlesPencilColor = color;
-
-        var patternCanvas = document.createElement('canvas'), ctx = patternCanvas.getContext('2d'), doublePI = Math.PI * 2, radius = 4, size = 20;
-
-        patternCanvas.width = patternCanvas.height = size;
-        ctx.fillStyle = color;
-        ctx.beginPath();
-
-        ctx.beginPath();
-        ctx.arc(0, 0, radius, 0, doublePI);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(0, size, radius, 0, doublePI);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(size, size, radius, 0, doublePI);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(size, 0, radius, 0, doublePI);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(size / 2, size / 2, radius + 1, 0, doublePI);
-        ctx.fill();
-
-        return _circlesPencilPattern = ctx.createPattern(patternCanvas, 'repeat');
+        return stripesPencilPattern = ctx.createPattern(patternCanvas, 'repeat');
     };
 
     MapPaint.StripesPencil = {
-        draw: function (ctx, point, previousPoint, sketch, circle) {
-            var sdx = previousPoint.x - point.x, sdy = previousPoint.y - point.y, speed = Math.sqrt(sdx * sdx + sdy * sdy);
-
-            var xa = 0, ya = 26, xb = 80, yb = 60;
-
-            var w = Math.floor(ya + (Math.min(speed, xb) - xa) * ((yb - ya) / (xb - xa)));
-
-            ctx.beginPath();
-            ctx.moveTo(previousPoint.x, previousPoint.y);
-            ctx.quadraticCurveTo((previousPoint.x + point.x) * 0.5, (previousPoint.y + point.y) * 0.5, point.x, point.y);
-
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-
-            var tmpGlobalCompositeOperation = ctx.globalCompositeOperation;
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.strokeStyle = 'black';
-            ctx.lineWidth = w - 1;
-
-            ctx.stroke();
-
-            ctx.strokeStyle = circle ? _circlesPencilGetPattern(sketch.colorFull) : _stripesPencilGetPattern(sketch.colorFull);
-            ctx.lineWidth = w;
-
-            ctx.globalCompositeOperation = tmpGlobalCompositeOperation;
-
-            ctx.stroke();
-        }
-    };
-
-    MapPaint.CirclesPencil = {
         draw: function (ctx, point, previousPoint, sketch) {
-            MapPaint.StripesPencil.draw(ctx, point, previousPoint, sketch, true);
-        }
-    };
-})(MapPaint || (MapPaint = {}));
-var MapPaint;
-(function (MapPaint) {
-    MapPaint.UglyFeltPen = {
-        draw: function (ctx, point, previousPoint, sketch) {
-            ctx.beginPath();
-            ctx.moveTo(previousPoint.x, previousPoint.y);
-            ctx.quadraticCurveTo((previousPoint.x + point.x) * 0.5, (previousPoint.y + point.y) * 0.5, point.x, point.y);
-
-            ctx.strokeStyle = sketch.color;
-            ctx.lineWidth = 16;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-
-            ctx.stroke();
-
-            ctx.lineWidth = 14;
-            ctx.strokeStyle = sketch.colorFull;
-
-            ctx.stroke();
+            var pattern = stripesPencilGetPattern(sketch.colorFull);
+            MapPaint.drawPatternPencil(ctx, point, previousPoint, sketch, pattern);
         }
     };
 })(MapPaint || (MapPaint = {}));
