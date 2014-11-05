@@ -1,7 +1,7 @@
-MapPaint
-========
+Leaflet MapPaint
+================
 
-Procedural painting for Leaflet maps.
+Bitmap painting for [Leaflet](http://leafletjs.com).
 
 [Demo](http://sintef-9012.github.io/MapPaint/)
 
@@ -9,10 +9,13 @@ Procedural painting for Leaflet maps.
 
 ```javascript
 leafletMap.MapPaint.enable();
+...
+leafletMap.MapPaint.disable();
 ```
 
+Or use the control switch
 ```javascript
-leafletMap.MapPaint.disable();
+leafletMap.addControl(new MapPaint.SwitchControl());
 ```
 
 ### Saving
@@ -23,7 +26,7 @@ By default the drawing is added to the map. You can setup a different save metho
 leafletMap.MapPaint.saveMethod = function(image, bounds) {
 }
 ```
-__image__ is a PNG file in base64 string
+__image__ is a PNG file as a base64 string
 
 __bounds__ are the [L.LatLngBounds](http://leafletjs.com/reference.html#latlngbounds) of the drawing.
 
