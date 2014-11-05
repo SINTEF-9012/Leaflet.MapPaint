@@ -21,7 +21,7 @@ __[Demo](http://sintef-9012.github.io/MapPaint/)__
 [Download the archive](https://github.com/SINTEF-9012/MapPaint/archive/master.zip) or use bower :
 
 ```
-bower install map-paint
+bower install leaflet-mappaint
 ```
 
 You need to include the JavaScript file and the CSS file. Feel free to improve the CSS file.
