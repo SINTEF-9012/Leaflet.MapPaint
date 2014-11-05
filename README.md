@@ -56,6 +56,8 @@ __bounds__ represents the [L.LatLngBounds](http://leafletjs.com/reference.html#l
 
 This library is developed in context of the [BRIDGE](http://www.bridgeproject.eu/en) project.
 
+The icons are from the [material design icons](https://github.com/google/material-design-icons) project.
+
 ### Licence
 
 The source code of this library is licenced under the MIT License.
