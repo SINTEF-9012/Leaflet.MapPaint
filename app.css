@@ -182,3 +182,15 @@ canvas {
 	font-weight: bold;
 	background: rgb(240, 240, 240);
 }
+
+@media screen and (max-width: 800px) {
+	.leaflet-right .mappaint-control {
+		margin-top: 70px;
+	}
+} 
+
+@media screen and (max-width: 600px) {
+	.leaflet-right .mappaint-control {
+		margin-top: 110px;
+	}
+} 
