@@ -8,7 +8,7 @@ Bitmap painting for [Leaflet](http://leafletjs.com).
  * 15 different colors!
  * Felt, crayon, procedural pencil and fancy/ugly patterns
 
-__[Demo](http://sintef-9012.github.io/MapPaint/)__
+__[Demo](http://sintef-9012.github.io/Leaflet.MapPaint/)__
 
 ### Requirements
 
