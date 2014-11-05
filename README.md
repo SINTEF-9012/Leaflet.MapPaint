@@ -1,14 +1,18 @@
 MapPaint
 ========
 
-Procedural painting on maps (WIP)
+Procedural painting on leaflet maps.
 
 [Demo](http://sintef-9012.github.io/MapPaint/)
 
-### Roadmap
+### Usage
 
- * [x] Procedural painting
- * [x] Multitouch support
- * [ ] Leaflet.js integration
- * [ ] Multizoom support
- * [ ] Network synchronization
+```javascript
+leafletMap.MapPaint.enable()
+```
+
+### Installation
+
+```
+bower install mappaint
+```
