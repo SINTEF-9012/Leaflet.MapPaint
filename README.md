@@ -48,6 +48,7 @@ leafletMap.MapPaint.saveMethod = function(image, bounds) {
 }
 ```
 __image__ is a PNG file as a base64 string
+
 Example: `"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAsMAAAIHCAYAAAB69VHgAAAgAElEQ…Gmc9yN5Rv"`
 
 __bounds__ represents the [L.LatLngBounds](http://leafletjs.com/reference.html#latlngbounds) of the drawing.
