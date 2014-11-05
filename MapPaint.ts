@@ -191,10 +191,13 @@ L.MapPaint = L.Handler.extend({
 		ctx.putImageData(imageData, center.x, center.y);
 	},
 
-	disable: function () {
+	removeHooks: function () {
 		this._map._container.removeChild(this._canvas);
 		this._map.removeControl(this.actionControl);
 		this._map.removeControl(this.colorControl);
+		this._map.off('resize', this._onResize, this);
+		this.restoreMapInteractions();
+		this.restoreMapInteractions();
 		this.restoreMapInteractions();
 	},
 

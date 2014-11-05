@@ -322,10 +322,13 @@ L.MapPaint = L.Handler.extend({
 
         ctx.putImageData(imageData, center.x, center.y);
     },
-    disable: function () {
+    removeHooks: function () {
         this._map._container.removeChild(this._canvas);
         this._map.removeControl(this.actionControl);
         this._map.removeControl(this.colorControl);
+        this._map.off('resize', this._onResize, this);
+        this.restoreMapInteractions();
+        this.restoreMapInteractions();
         this.restoreMapInteractions();
     },
     saveMethod: function (image, bounds) {
@@ -761,13 +764,13 @@ var MapPaint;
             ctx.quadraticCurveTo((previousPoint.x + point.x) * 0.5, (previousPoint.y + point.y) * 0.5, point.x, point.y);
 
             ctx.strokeStyle = sketch.color;
-            ctx.lineWidth = 14;
+            ctx.lineWidth = 10;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
             ctx.stroke();
 
-            ctx.lineWidth = 12;
+            ctx.lineWidth = 8;
             ctx.strokeStyle = sketch.colorFull;
 
             ctx.stroke();

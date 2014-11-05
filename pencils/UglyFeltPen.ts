@@ -8,13 +8,13 @@ module MapPaint {
 			//ctx.closePath();
 
 			ctx.strokeStyle = sketch.color;
-			ctx.lineWidth = 14; 
+			ctx.lineWidth = 10; 
 			ctx.lineCap = 'round';
 			ctx.lineJoin = 'round';
 
 			ctx.stroke();
 
-			ctx.lineWidth = 12; 
+			ctx.lineWidth = 8; 
 			ctx.strokeStyle = sketch.colorFull;
 
 			ctx.stroke();
