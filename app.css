@@ -39,7 +39,7 @@ canvas {
 	background: rgba(255,255,255,0.66);
 	border-radius: 4px;
 	padding: 4px;
-	width: 240px;
+	width: 230px;
 	/*display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
@@ -85,7 +85,7 @@ canvas {
 	background: -moz-linear-gradient(left, #5981D8 39%, rgb(255, 0, 61) 39%);
 	background: linear-gradient(left, #5981D8 39%, rgb(255, 0, 61) 39%);
 	border-radius: 20% 30%;
-	height: 22px;
+	height: 20px;
 	-webkit-transform: rotate(-45deg);
 	-moz-transform: rotate(-45deg);
 	transform: rotate(-45deg);
@@ -169,18 +169,17 @@ canvas {
 	margin: 2px;
 	background: white;
 	text-align: center;
-	padding: 4px 12px;
+	padding: 4px 14px 4px 32px;
 	border-radius: 4px;
 	height: 28px;
 	line-height: 28px;
-	min-width: 48px;
+	/*min-width: 48px;*/
 	box-shadow: -2px -1px 0px 1px rgba(0,0,0,0.1) inset;
 	cursor: pointer;
 }
 
 .mappaint-pencil.selected {
-	font-weight: bold;
-	background: rgb(240, 240, 240);
+	background-color: rgb(240, 240, 240);
 }
 
 @media screen and (max-width: 800px) {
@@ -194,3 +193,51 @@ canvas {
 		margin-top: 110px;
 	}
 } 
+
+/* material design icons */
+
+.mappaint-uglyfeltpen, .mappaint-crayonpencil, .mappaint-proceduralpencil {
+	background: white url("./icons/ic_edit_black_24dp.png") no-repeat 4px center;
+}
+.mappaint-circlespencil {
+	background: white url("./icons/ic_grain_black_24dp.png") no-repeat 4px center;
+}
+.mappaint-stripespencil {
+	background: white url("./icons/ic_texture_black_24dp.png") no-repeat 4px center;
+}
+
+.mappaint-switch {
+	cursor: pointer;
+	height: 28px;
+	width: 28px;
+	background: white url("./icons/ic_edit_black_24dp.png") no-repeat center center;
+}
+
+.mappaint-switch.enabled {
+	background: white url("./icons/ic_close_black_24dp.png") no-repeat center center;
+}
+
+@media 
+(-webkit-min-device-pixel-ratio: 2), 
+(min-resolution: 192dpi) { 
+	.mappaint-uglyfeltpen, .mappaint-crayonpencil, .mappaint-proceduralpencil {
+		background-image: url("./icons/ic_edit_black_48dp.png");
+		background-size: 24px 24px;
+	}
+	.mappaint-circlespencil {
+		background-image: url("./icons/ic_grain_black_48dp.png");
+		background-size: 24px 24px;
+	}
+	.mappaint-stripespencil {
+		background-image: url("./icons/ic_texture_black_48dp.png");
+		background-size: 24px 24px;
+	}
+	.mappaint-switch {
+		background-image: url("./icons/ic_edit_black_48dp.png");
+		background-size: 24px 24px;
+	}
+	.mappaint-switch.enabled {
+		background-image: url("./icons/ic_close_black_48dp.png");
+		background-size: 24px 24px;
+	}
+}

@@ -1,6 +1,37 @@
 /// <reference path="./bower_components/DefinitelyTyped/leaflet/leaflet.d.ts"/>
 
 module MapPaint {
+	export var SwitchControl = L.Control.extend({
+		options: {
+			position: 'bottomright'
+		},
+
+		onAdd: function(map: L.Map) {
+			// create the control container with a particular class name
+			var container = L.DomUtil.create('div', 'leaflet-bar mappaint-switch');
+
+			var mapPaint = (<any>map).MapPaint;
+
+			if (mapPaint.enabled()) {
+				container.classList.add("enabled");
+			}
+
+			container.onclick = () => {
+				if (mapPaint.enabled()) {
+					mapPaint.disable();
+					container.classList.remove("enabled");
+				} else {
+					mapPaint.enable();
+					container.classList.add("enabled");
+				}
+				return false;
+			};
+
+			return container;
+
+		}
+	});
+
 	export var ColorControl = L.Control.extend({
 		options: {
 			position: 'topright',
@@ -17,7 +48,9 @@ module MapPaint {
 				{ r: 255, g: 193, b: 7 },
 				{ r: 255, g: 87, b: 34 },
 				{ r: 121, g: 85, b: 72 },
-				{ r: 96, g: 125, b: 139 }
+				{ r: 96, g: 125, b: 139 },
+				{ r: 178, g: 168, b: 163 },
+				{ r: 255, g: 128, b: 171 }
 			]
 		},
 
@@ -82,6 +115,10 @@ module MapPaint {
 
 			L.DomEvent.addListener(btnSave, 'click', () => {
 				var pencil : MapPaint.Sketchy = this.pencil;
+				pencil.SavePicture(map, (image, bounds) => {
+					this.mappaint.saveMethod(image, bounds);
+				});
+
 				/*s = new MapPaint.Save(pencil.context, 128, pencil.retina)
 				a = s.MergeModifiedAreas(pencil.dataGrid._modifiedAreas)
 				b = s.CroppedDrawAreas(a)
@@ -107,27 +144,6 @@ module MapPaint {
 
 				pencil.Clear();*/
 
-				var context = (<any>pencil).context;
-				var s = new MapPaint.Save(context, 128, pencil.retina);
-
-				var imageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
-				var croppedSize = s.CropImageData(imageData);
-
-				if (!croppedSize) {
-					return;
-				}
-
-				var png = s.CreatePngs([croppedSize]); 
-				if (png.length && png[0]) {
-					var leafletBounds = new L.LatLngBounds(
-						map.containerPointToLatLng(new L.Point(croppedSize.xMin, croppedSize.yMin)),
-						map.containerPointToLatLng(new L.Point(croppedSize.xMax, croppedSize.yMax))
-					);
-
-					this.mappaint.saveMethod(png[0], leafletBounds);
-				}
-
-				pencil.Clear();
 			});
 
 			container.appendChild(btnSave);
@@ -170,7 +186,7 @@ module MapPaint {
 			container.appendChild(eraser);
 
 			this.options.pencils.forEach((pencil) => {
-				var c = L.DomUtil.create('div', 'mappaint-pencil');
+				var c = L.DomUtil.create('div', 'mappaint-pencil mappaint-'+pencil.obj.toLocaleLowerCase());
 				c.appendChild(document.createTextNode(pencil.name));
 				container.appendChild(c);
 				c.onclick = () => {

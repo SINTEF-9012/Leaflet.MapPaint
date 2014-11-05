@@ -1,5 +1,33 @@
 var MapPaint;
 (function (MapPaint) {
+    MapPaint.SwitchControl = L.Control.extend({
+        options: {
+            position: 'bottomright'
+        },
+        onAdd: function (map) {
+            var container = L.DomUtil.create('div', 'leaflet-bar mappaint-switch');
+
+            var mapPaint = map.MapPaint;
+
+            if (mapPaint.enabled()) {
+                container.classList.add("enabled");
+            }
+
+            container.onclick = function () {
+                if (mapPaint.enabled()) {
+                    mapPaint.disable();
+                    container.classList.remove("enabled");
+                } else {
+                    mapPaint.enable();
+                    container.classList.add("enabled");
+                }
+                return false;
+            };
+
+            return container;
+        }
+    });
+
     MapPaint.ColorControl = L.Control.extend({
         options: {
             position: 'topright',
@@ -16,7 +44,9 @@ var MapPaint;
                 { r: 255, g: 193, b: 7 },
                 { r: 255, g: 87, b: 34 },
                 { r: 121, g: 85, b: 72 },
-                { r: 96, g: 125, b: 139 }
+                { r: 96, g: 125, b: 139 },
+                { r: 178, g: 168, b: 163 },
+                { r: 255, g: 128, b: 171 }
             ]
         },
         onAdd: function () {
@@ -78,25 +108,9 @@ var MapPaint;
 
             L.DomEvent.addListener(btnSave, 'click', function () {
                 var pencil = _this.pencil;
-
-                var context = pencil.context;
-                var s = new MapPaint.Save(context, 128, pencil.retina);
-
-                var imageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
-                var croppedSize = s.CropImageData(imageData);
-
-                if (!croppedSize) {
-                    return;
-                }
-
-                var png = s.CreatePngs([croppedSize]);
-                if (png.length && png[0]) {
-                    var leafletBounds = new L.LatLngBounds(map.containerPointToLatLng(new L.Point(croppedSize.xMin, croppedSize.yMin)), map.containerPointToLatLng(new L.Point(croppedSize.xMax, croppedSize.yMax)));
-
-                    _this.mappaint.saveMethod(png[0], leafletBounds);
-                }
-
-                pencil.Clear();
+                pencil.SavePicture(map, function (image, bounds) {
+                    _this.mappaint.saveMethod(image, bounds);
+                });
             });
 
             container.appendChild(btnSave);
@@ -120,7 +134,7 @@ var MapPaint;
             container.appendChild(eraser);
 
             this.options.pencils.forEach(function (pencil) {
-                var c = L.DomUtil.create('div', 'mappaint-pencil');
+                var c = L.DomUtil.create('div', 'mappaint-pencil mappaint-' + pencil.obj.toLocaleLowerCase());
                 c.appendChild(document.createTextNode(pencil.name));
                 container.appendChild(c);
                 c.onclick = function () {
@@ -179,7 +193,7 @@ L.MapPaint = L.Handler.extend({
 
         L.DomEvent.addListener(canvas, 'mousedown', this._onMouseDown, this);
         L.DomEvent.addListener(canvas, 'mouseup', this._onMouseUp, this);
-        L.DomEvent.addListener(canvas, 'mouseout', this._onMouseUp, this);
+        L.DomEvent.addListener(canvas, 'mouseout', this._onMouseOut, this);
 
         L.DomEvent.addListener(canvas, 'touchstart', this._onTouchStart, this);
         L.DomEvent.addListener(canvas, 'touchend', this._onTouchEnd, this);
@@ -205,7 +219,12 @@ L.MapPaint = L.Handler.extend({
         e.preventDefault();
     },
     _onMouseMove: function (e) {
-        this.pencil.Stroke('mouse', { x: e.clientX, y: e.clientY });
+        if (this._mouseOut) {
+            this._mouseOut = false;
+            this.pencil.Start('mouse', { x: e.clientX, y: e.clientY });
+        } else {
+            this.pencil.Stroke('mouse', { x: e.clientX, y: e.clientY });
+        }
 
         e.preventDefault();
     },
@@ -213,6 +232,9 @@ L.MapPaint = L.Handler.extend({
         this.pencil.Stop('mouse');
         L.DomEvent.removeListener(this._canvas, 'mousemove', this._onMouseMove, this);
         e.preventDefault();
+    },
+    _onMouseOut: function (e) {
+        this._mouseOut = true;
     },
     _onTouchStart: function (e) {
         console.log('LAPPPIN');
@@ -323,6 +345,13 @@ L.MapPaint = L.Handler.extend({
         ctx.putImageData(imageData, center.x, center.y);
     },
     removeHooks: function () {
+        var _this = this;
+        this.pencil.SavePicture(this._map, function (image, bounds) {
+            if (window.confirm("Do you want to save your drawing?")) {
+                _this.saveMethod(image, bounds);
+            }
+        });
+
         this._map._container.removeChild(this._canvas);
         this._map.removeControl(this.actionControl);
         this._map.removeControl(this.colorControl);
@@ -531,6 +560,29 @@ var MapPaint;
 
         Sketchy.prototype.FetchPointsArround = function (point) {
             return this.dataGrid.FetchArround(point);
+        };
+
+        Sketchy.prototype.SavePicture = function (map, callback) {
+            var context = this.context;
+            var s = new MapPaint.Save(context, 128, this.retina);
+
+            var imageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
+            var croppedSize = s.CropImageData(imageData);
+
+            if (!croppedSize) {
+                return false;
+            }
+
+            var png = s.CreatePngs([croppedSize]);
+            if (png.length && png[0]) {
+                var leafletBounds = new L.LatLngBounds(map.containerPointToLatLng(new L.Point(croppedSize.xMin, croppedSize.yMin)), map.containerPointToLatLng(new L.Point(croppedSize.xMax, croppedSize.yMax)));
+
+                callback(png[0], leafletBounds);
+            }
+
+            this.Clear();
+
+            return true;
         };
         return Sketchy;
     })();

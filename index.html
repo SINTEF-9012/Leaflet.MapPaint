@@ -29,7 +29,9 @@
 	    maxNativeZoom: 17
 	}).addTo(map);
 
-	map.MapPaint.enable(); 
+	map.MapPaint.enable();
+
+	map.addControl(new MapPaint.SwitchControl());
 	// L.control.zoom().addTo(map);
 	</script>
 </body>
