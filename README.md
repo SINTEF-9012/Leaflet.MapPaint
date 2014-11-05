@@ -3,7 +3,7 @@ Leaflet.MapPaint
 
 Bitmap painting for [Leaflet](http://leafletjs.com).
 
-## [Demo](http://sintef-9012.github.io/MapPaint/)
+__[Demo](http://sintef-9012.github.io/MapPaint/)__
 
 ### Requirements
 
