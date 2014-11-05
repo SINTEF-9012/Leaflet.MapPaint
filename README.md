@@ -3,15 +3,18 @@ Leaflet.MapPaint
 
 Bitmap painting for [Leaflet](http://leafletjs.com).
 
+ * Designed for touch device
+  * Works fine with an old mouse
+ * 15 different colors!
+ * Felt, crayon, procedural pencil and fancy/ugly patterns
+
 __[Demo](http://sintef-9012.github.io/MapPaint/)__
 
 ### Requirements
 
- * Leaflet 0.7
- * HTML5 browser with canvas support
+ * Tested with Leaflet 0.7
+ * A HTML5 browser supporting canvas is required
   * Tested with Safari iOS8, Firefox 33, Chrome 38 and Internet Explorer 11
-
-
 
 ### Installation
 
@@ -31,7 +34,7 @@ leafletMap.MapPaint.enable();
 leafletMap.MapPaint.disable();
 ```
 
-You can also use control switch
+You can also use the control switch :
 ```javascript
 leafletMap.addControl(new MapPaint.SwitchControl());
 ```
@@ -45,8 +48,9 @@ leafletMap.MapPaint.saveMethod = function(image, bounds) {
 }
 ```
 __image__ is a PNG file as a base64 string
+Example: `"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAsMAAAIHCAYAAAB69VHgAAAgAElEQ…Gmc9yN5Rv"`
 
-__bounds__ are the [L.LatLngBounds](http://leafletjs.com/reference.html#latlngbounds) of the drawing.
+__bounds__ represents the [L.LatLngBounds](http://leafletjs.com/reference.html#latlngbounds) of the drawing.
 
 ### Acknowledgements
 
