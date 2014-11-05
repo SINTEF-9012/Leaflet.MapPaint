@@ -1,5 +1,5 @@
 /// <reference path="./bower_components/DefinitelyTyped/leaflet/leaflet.d.ts"/>
- 
+
 L.MapPaint = L.Handler.extend({
 	includes: L.Mixin.Events,
 
@@ -33,7 +33,7 @@ L.MapPaint = L.Handler.extend({
 
 		L.DomEvent.addListener(canvas, 'mousedown', this._onMouseDown, this);
 		L.DomEvent.addListener(canvas, 'mouseup', this._onMouseUp, this);
-		L.DomEvent.addListener(canvas, 'mouseout', this._onMouseUp, this);
+		L.DomEvent.addListener(canvas, 'mouseout', this._onMouseOut, this);
 
 		L.DomEvent.addListener(canvas, 'touchstart', this._onTouchStart, this);
 		L.DomEvent.addListener(canvas, 'touchend', this._onTouchEnd, this);
@@ -59,7 +59,12 @@ L.MapPaint = L.Handler.extend({
 	},
 
 	_onMouseMove: function (e: MouseEvent) {
-		this.pencil.Stroke('mouse', { x: e.clientX, y: e.clientY });
+		if (this._mouseOut) {
+			this._mouseOut = false;
+			this.pencil.Start('mouse', { x: e.clientX, y: e.clientY });
+		} else {
+			this.pencil.Stroke('mouse', { x: e.clientX, y: e.clientY });
+		}
 
 		e.preventDefault();
 	},
@@ -70,14 +75,18 @@ L.MapPaint = L.Handler.extend({
 		e.preventDefault();
 	},
 
+	_onMouseOut: function (e: MouseEvent) {
+		this._mouseOut = true;
+	},
+
 	_onTouchStart: function (e: TouchEvent) {
 
 		console.log('LAPPPIN');
-		
+
 		for (var i = 0, l = e.touches.length; i < l; ++i) {
 			var t = e.touches[i];
 			console.log(t.clientX, t.clientY);
-			this.pencil.Start("touch"+t.identifier, { x: t.clientX, y: t.clientY });
+			this.pencil.Start("touch" + t.identifier, { x: t.clientX, y: t.clientY });
 		}
 
 		L.DomEvent.addListener(this._canvas, 'touchmove', this._onTouchMove, this);
@@ -85,16 +94,16 @@ L.MapPaint = L.Handler.extend({
 		e.preventDefault();
 	},
 
-	_onTouchMove: function(e: TouchEvent) {
+	_onTouchMove: function (e: TouchEvent) {
 		for (var i = 0, l = e.touches.length; i < l; ++i) {
 			var t = e.touches[i];
-			this.pencil.Stroke("touch"+t.identifier, { x: t.clientX, y: t.clientY });
+			this.pencil.Stroke("touch" + t.identifier, { x: t.clientX, y: t.clientY });
 		}
 
 		e.preventDefault();
 	},
 
-	_onTouchEnd: function(e: TouchEvent) {
+	_onTouchEnd: function (e: TouchEvent) {
 		for (var i = 0, l = e.touches.length; i < l; ++i) {
 			var t = e.touches[i];
 			this.pencil.Stop("touch" + t.identifier);
@@ -104,7 +113,7 @@ L.MapPaint = L.Handler.extend({
 	},
 
 	disableMapInteractions: function () {
-		var map : L.Map = this._map;
+		var map: L.Map = this._map;
 
 		this._interactionsStates = {
 			dragging: map.dragging.enabled(),
@@ -125,7 +134,7 @@ L.MapPaint = L.Handler.extend({
 		map.tap && map.tap.disable();
 	},
 
-	restoreMapInteractions: function() {
+	restoreMapInteractions: function () {
 		var map: L.Map = this._map, interactions = this._interactionsStates;
 
 		if (interactions.dragging) {
@@ -158,7 +167,7 @@ L.MapPaint = L.Handler.extend({
 	},
 
 	_enhanceContext: function () {
-		var canvas : HTMLCanvasElement = this._canvas;
+		var canvas: HTMLCanvasElement = this._canvas;
 		var ratio = window.devicePixelRatio || 1,
 			width = canvas.width,
 			height = canvas.height;
@@ -175,7 +184,7 @@ L.MapPaint = L.Handler.extend({
 	},
 
 	_onResize: function (e: L.LeafletResizeEvent) {
-		var	canvas = <HTMLCanvasElement> this._canvas,
+		var canvas = <HTMLCanvasElement> this._canvas,
 			ctx = <CanvasRenderingContext2D>this._context,
 			imageData = ctx.getImageData(0, 0, canvas.width, canvas.height),
 			container = <HTMLDivElement> this._map._container;
@@ -192,6 +201,12 @@ L.MapPaint = L.Handler.extend({
 	},
 
 	removeHooks: function () {
+		this.pencil.SavePicture(this._map, (image, bounds) => {
+			if (window.confirm("Do you want to save your drawing?")) {
+				this.saveMethod(image, bounds);
+			}
+		});
+
 		this._map._container.removeChild(this._canvas);
 		this._map.removeControl(this.actionControl);
 		this._map.removeControl(this.colorControl);

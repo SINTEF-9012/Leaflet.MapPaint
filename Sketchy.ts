@@ -137,5 +137,31 @@ module MapPaint {
 		public FetchPointsArround(point: PaintPoint): PartitionGridPaintPoint[] {
 			return this.dataGrid.FetchArround(point);
 		}
+
+		public SavePicture(map: L.Map, callback: (image: string, bounds: L.LatLngBounds) => void) : boolean {
+			var context = this.context;
+			var s = new MapPaint.Save(context, 128, this.retina);
+
+			var imageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
+			var croppedSize = s.CropImageData(imageData);
+
+			if (!croppedSize) {
+				return false;
+			}
+
+			var png = s.CreatePngs([croppedSize]); 
+			if (png.length && png[0]) {
+				var leafletBounds = new L.LatLngBounds(
+					map.containerPointToLatLng(new L.Point(croppedSize.xMin, croppedSize.yMin)),
+					map.containerPointToLatLng(new L.Point(croppedSize.xMax, croppedSize.yMax))
+				);
+
+				callback(png[0], leafletBounds);
+			}
+
+			this.Clear();
+
+			return true;
+		}
 	}
 }
