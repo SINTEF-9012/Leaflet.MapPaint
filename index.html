@@ -10,14 +10,14 @@
 	<script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
     <script src="dist/MapPaint.js"></script>
 
-    <link rel="stylesheet" href="app.css" type="text/css" />
+    <link rel="stylesheet" href="dist/MapPaint.css" type="text/css" />
 	<meta name="apple-mobile-web-app-capable" content="yes">
 </head>
 <body>
-	<div id="map"></div>
+	<div id="mappaint-map"></div>
 
 	<script>
-	var map = L.map("map", {
+	var map = L.map("mappaint-map", {
 	    attributionControl: false,
 	    zoomControl: false
 	}).setView(new L.LatLng(59.901111, 10.752778), 14);

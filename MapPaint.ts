@@ -6,6 +6,7 @@ L.MapPaint = L.Handler.extend({
 
 	addHooks: function () {
 		var canvas = this._canvas = <HTMLCanvasElement> document.createElement('canvas');
+		canvas.className = "mappaint-canvas";
 
 		var container = <HTMLDivElement> this._map._container;
 
