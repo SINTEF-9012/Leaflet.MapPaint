@@ -90,9 +90,9 @@ var MapPaint;
         options: {
             position: 'topleft',
             pencils: [
-                { name: "Felt", obj: "UglyFeltPen" },
-                { name: "Crayon", obj: "CrayonPencil" },
                 { name: "Procedural", obj: "ProceduralPencil" },
+                { name: "Crayon", obj: "CrayonPencil" },
+                { name: "Felt", obj: "UglyFeltPen" },
                 { name: "Circles", obj: "CirclesPencil" },
                 { name: "Stripes", obj: "StripesPencil" }
             ]
@@ -166,6 +166,7 @@ L.MapPaint = L.Handler.extend({
     includes: L.Mixin.Events,
     addHooks: function () {
         var canvas = this._canvas = document.createElement('canvas');
+        canvas.className = "mappaint-canvas";
 
         var container = this._map._container;
 
@@ -212,7 +213,7 @@ L.MapPaint = L.Handler.extend({
             this.pencil.DisableFiller();
         }
 
-        this.pencil.Start('mouse', { x: e.clientX, y: e.clientY });
+        this.pencil.Start('mouse', this._map.mouseEventToContainerPoint(e));
 
         L.DomEvent.addListener(this._canvas, 'mousemove', this._onMouseMove, this);
 
@@ -221,9 +222,9 @@ L.MapPaint = L.Handler.extend({
     _onMouseMove: function (e) {
         if (this._mouseOut) {
             this._mouseOut = false;
-            this.pencil.Start('mouse', { x: e.clientX, y: e.clientY });
+            this.pencil.Start('mouse', this._map.mouseEventToContainerPoint(e));
         } else {
-            this.pencil.Stroke('mouse', { x: e.clientX, y: e.clientY });
+            this.pencil.Stroke('mouse', this._map.mouseEventToContainerPoint(e));
         }
 
         e.preventDefault();
@@ -237,12 +238,9 @@ L.MapPaint = L.Handler.extend({
         this._mouseOut = true;
     },
     _onTouchStart: function (e) {
-        console.log('LAPPPIN');
-
         for (var i = 0, l = e.touches.length; i < l; ++i) {
             var t = e.touches[i];
-            console.log(t.clientX, t.clientY);
-            this.pencil.Start("touch" + t.identifier, { x: t.clientX, y: t.clientY });
+            this.pencil.Start("touch" + t.identifier, this._map.mouseEventToContainerPoint(t));
         }
 
         L.DomEvent.addListener(this._canvas, 'touchmove', this._onTouchMove, this);
@@ -252,7 +250,7 @@ L.MapPaint = L.Handler.extend({
     _onTouchMove: function (e) {
         for (var i = 0, l = e.touches.length; i < l; ++i) {
             var t = e.touches[i];
-            this.pencil.Stroke("touch" + t.identifier, { x: t.clientX, y: t.clientY });
+            this.pencil.Stroke("touch" + t.identifier, this._map.mouseEventToContainerPoint(t));
         }
 
         e.preventDefault();
