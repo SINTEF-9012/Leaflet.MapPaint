@@ -52,7 +52,7 @@ L.MapPaint = L.Handler.extend({
 			this.pencil.DisableFiller();
 		}
 
-		this.pencil.Start('mouse', { x: e.clientX, y: e.clientY });
+		this.pencil.Start('mouse', this._map.mouseEventToContainerPoint(e));
 
 		L.DomEvent.addListener(this._canvas, 'mousemove', this._onMouseMove, this);
 
@@ -62,9 +62,10 @@ L.MapPaint = L.Handler.extend({
 	_onMouseMove: function (e: MouseEvent) {
 		if (this._mouseOut) {
 			this._mouseOut = false;
-			this.pencil.Start('mouse', { x: e.clientX, y: e.clientY });
-		} else {
-			this.pencil.Stroke('mouse', { x: e.clientX, y: e.clientY });
+			this.pencil.Start('mouse', this._map.mouseEventToContainerPoint(e));
+		} else
+		{
+			this.pencil.Stroke('mouse', this._map.mouseEventToContainerPoint(e));
 		}
 
 		e.preventDefault();
@@ -82,12 +83,9 @@ L.MapPaint = L.Handler.extend({
 
 	_onTouchStart: function (e: TouchEvent) {
 
-		console.log('LAPPPIN');
-
 		for (var i = 0, l = e.touches.length; i < l; ++i) {
 			var t = e.touches[i];
-			console.log(t.clientX, t.clientY);
-			this.pencil.Start("touch" + t.identifier, { x: t.clientX, y: t.clientY });
+			this.pencil.Start("touch" + t.identifier, this._map.mouseEventToContainerPoint(t));
 		}
 
 		L.DomEvent.addListener(this._canvas, 'touchmove', this._onTouchMove, this);
@@ -98,7 +96,7 @@ L.MapPaint = L.Handler.extend({
 	_onTouchMove: function (e: TouchEvent) {
 		for (var i = 0, l = e.touches.length; i < l; ++i) {
 			var t = e.touches[i];
-			this.pencil.Stroke("touch" + t.identifier, { x: t.clientX, y: t.clientY });
+			this.pencil.Stroke("touch" + t.identifier, this._map.mouseEventToContainerPoint(t));
 		}
 
 		e.preventDefault();
