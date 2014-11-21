@@ -96,9 +96,9 @@ module MapPaint {
 		options: {
 			position: 'topleft',
 			pencils: [
-				{ name: "Felt", obj: "UglyFeltPen" },
-				{ name: "Crayon", obj: "CrayonPencil" },
 				{ name: "Procedural", obj: "ProceduralPencil" },
+				{ name: "Crayon", obj: "CrayonPencil" },
+				{ name: "Felt", obj: "UglyFeltPen" },
 				{ name: "Circles", obj: "CirclesPencil" },
 				{ name: "Stripes", obj: "StripesPencil" }
 			]
