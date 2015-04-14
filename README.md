@@ -1,6 +1,8 @@
 Leaflet.MapPaint
 ================
 
+![Leaflet.MapPaint demo image](demo.png)
+
 Bitmap painting for [Leaflet](http://leafletjs.com).
 
  * Designed for touch device
