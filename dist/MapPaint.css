@@ -1,26 +1,26 @@
 #mappaint-map {
 	position: absolute;
-	top:0;
-	right:0;
-	left:0;
-	bottom:0;
+	top: 0;
+	right: 0;
+	left: 0;
+	bottom: 0;
 }
 
 canvas.mappaint-canvas {
 	cursor: crosshair;
 	position: absolute;
-	z-index: 5;
-	top:0;
-	right:0;
-	left:0;
-	bottom:0;
+	z-index: 401;
+	top: 0;
+	right: 0;
+	left: 0;
+	bottom: 0;
 }
 
 #mappaint-colors {
-	position:absolute;
-	right:0;
-	top:0;
-	bottom:0;
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
 }
 
 #mappaint-colors div {
@@ -30,15 +30,15 @@ canvas.mappaint-canvas {
 
 .mappaint-control {
 	-webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 
-.mappaint-control > div {
-	background: rgba(255,255,255,0.66);
+.mappaint-control>div {
+	background: rgba(255, 255, 255, 0.66);
 	border-radius: 4px;
 	padding: 4px;
 	width: 230px;
@@ -50,34 +50,37 @@ canvas.mappaint-canvas {
 	z-index: 3;
 }
 
-.leaflet-left .mappaint-control > div {
+.leaflet-left .mappaint-control>div {
 	width: auto;
 }
-.mappaint-control > div > * {
+
+.mappaint-control>div>* {
 	display: inline-block;
 }
 
-.mappaint-color, .mappaint-eraser {
-	margin:0.4em;
-	width:3em;
-	height:3em;
+.mappaint-color,
+.mappaint-eraser {
+	margin: 0.4em;
+	width: 3em;
+	height: 3em;
 	border-radius: 50% 43%;
 	/*box-shadow: -1px -1px 6px rgba(0, 0, 0, 0.55) inset, 0px 0px 3px rgba(0,0,0,0.3);*/
-	box-shadow: -3px -4px 0px 0px rgba(0, 0, 0, 0.35) inset, 2px 2px 0px 0px rgba(255,255,255,0.3) inset;
+	box-shadow: -3px -4px 0px 0px rgba(0, 0, 0, 0.35) inset, 2px 2px 0px 0px rgba(255, 255, 255, 0.3) inset;
 	cursor: pointer;
 	/*flex-shrink: 0;*/
 }
 
 .mappaint-color.selected {
-	box-shadow: 3px 4px 0px 0px rgba(0, 0, 0, 0.52) inset, -2px -2px 0px 0px rgba(255,255,255,0.35) inset;
+	box-shadow: 3px 4px 0px 0px rgba(0, 0, 0, 0.52) inset, -2px -2px 0px 0px rgba(255, 255, 255, 0.35) inset;
 }
 
-.mappaint-color:hover, .mappaint-eraser:hover {
-	box-shadow: -3px -4px 0px 0px rgba(0, 0, 0, 0.55) inset, 2px 2px 0px 0px rgba(255,255,255,0.5) inset;
+.mappaint-color:hover,
+.mappaint-eraser:hover {
+	box-shadow: -3px -4px 0px 0px rgba(0, 0, 0, 0.55) inset, 2px 2px 0px 0px rgba(255, 255, 255, 0.5) inset;
 }
 
 .mappaint-color.selected:hover {
-	box-shadow: 3px 4px 0px 0px rgba(0, 0, 0, 0.65) inset, -2px -2px 0px 0px rgba(255,255,255,0.5) inset;
+	box-shadow: 3px 4px 0px 0px rgba(0, 0, 0, 0.65) inset, -2px -2px 0px 0px rgba(255, 255, 255, 0.5) inset;
 }
 
 
@@ -115,7 +118,7 @@ canvas.mappaint-canvas {
 }
 
 .leaflet-mappaint button {
-	padding:1em;
+	padding: 1em;
 	padding: 20px;
 	-webkit-appearance: none;
 }
@@ -127,7 +130,7 @@ canvas.mappaint-canvas {
 	background: #2C4E74;
 	margin-top: 8px;
 	margin-left: 9px;
-	margin-bottom: 15px;	
+	margin-bottom: 15px;
 	border-radius: 3px;
 	box-shadow: 1px 1px 0px 2px rgba(0, 0, 0, 0.13) inset;
 	flex-shrink: 0;
@@ -157,14 +160,15 @@ canvas.mappaint-canvas {
 	width: 60px;
 	border-radius: 4px;
 	color: white;
-	box-shadow: -2px -2px 0 1px rgba(0,0,0,0.5) inset;
+	box-shadow: -2px -2px 0 1px rgba(0, 0, 0, 0.5) inset;
 	height: 36px;
 	margin: 2px;
 	padding: 4px;
 }
+
 .mappaint-control .action-button-save:active {
 	background: rgb(82, 84, 86);
-	box-shadow: 2px 2px 0 1px rgba(0,0,0,0.5) inset;
+	box-shadow: 2px 2px 0 1px rgba(0, 0, 0, 0.5) inset;
 }
 
 .mappaint-pencil {
@@ -176,7 +180,7 @@ canvas.mappaint-canvas {
 	height: 28px;
 	line-height: 28px;
 	/*min-width: 48px;*/
-	box-shadow: -2px -1px 0px 1px rgba(0,0,0,0.1) inset;
+	box-shadow: -2px -1px 0px 1px rgba(0, 0, 0, 0.1) inset;
 	cursor: pointer;
 }
 
@@ -188,22 +192,26 @@ canvas.mappaint-canvas {
 	.leaflet-right .mappaint-control {
 		margin-top: 70px;
 	}
-} 
+}
 
 @media screen and (max-width: 600px) {
 	.leaflet-right .mappaint-control {
 		margin-top: 110px;
 	}
-} 
+}
 
 /* material design icons */
 
-.mappaint-uglyfeltpen, .mappaint-crayonpencil, .mappaint-proceduralpencil {
+.mappaint-uglyfeltpen,
+.mappaint-crayonpencil,
+.mappaint-proceduralpencil {
 	background: white url("../icons/ic_edit_black_24dp.png") no-repeat 4px center;
 }
+
 .mappaint-circlespencil {
 	background: white url("../icons/ic_grain_black_24dp.png") no-repeat 4px center;
 }
+
 .mappaint-stripespencil {
 	background: white url("../icons/ic_texture_black_24dp.png") no-repeat 4px center;
 }
@@ -219,25 +227,31 @@ canvas.mappaint-canvas {
 	background: white url("../icons/ic_close_black_24dp.png") no-repeat center center;
 }
 
-@media 
-(-webkit-min-device-pixel-ratio: 2), 
-(min-resolution: 192dpi) { 
-	.mappaint-uglyfeltpen, .mappaint-crayonpencil, .mappaint-proceduralpencil {
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+
+	.mappaint-uglyfeltpen,
+	.mappaint-crayonpencil,
+	.mappaint-proceduralpencil {
 		background-image: url("../icons/ic_edit_black_48dp.png");
 		background-size: 24px 24px;
 	}
+
 	.mappaint-circlespencil {
 		background-image: url("../icons/ic_grain_black_48dp.png");
 		background-size: 24px 24px;
 	}
+
 	.mappaint-stripespencil {
 		background-image: url("../icons/ic_texture_black_48dp.png");
 		background-size: 24px 24px;
 	}
+
 	.mappaint-switch {
 		background-image: url("../icons/ic_edit_black_48dp.png");
 		background-size: 24px 24px;
 	}
+
 	.mappaint-switch.enabled {
 		background-image: url("../icons/ic_close_black_48dp.png");
 		background-size: 24px 24px;

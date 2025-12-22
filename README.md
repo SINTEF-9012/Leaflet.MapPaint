@@ -5,26 +5,25 @@ Leaflet.MapPaint
 
 Bitmap painting for [Leaflet](http://leafletjs.com).
 
- * Designed for touch device
-  * Works fine with an old mouse
- * 15 different colors!
- * Felt, crayon, procedural pencil and fancy/ugly patterns
+* Designed for touch device
+* Works fine with an old mouse
+* 15 different colors!
+* Felt, crayon, procedural pencil and fancy/ugly patterns
 
 __[Demo](http://sintef-9012.github.io/Leaflet.MapPaint/)__
 
+Note: This is an old project. We are waiting for Leaflet 2 to stabilise before updating it with modern TypeScript and Javascript features.
+
 ### Requirements
 
- * Tested with Leaflet 0.7
- * A HTML5 browser supporting canvas is required
-  * Tested with Safari iOS8, Firefox 33, Chrome 38 and Internet Explorer 11
+* Tested with Leaflet 1.x
+* Leaflet 2 is still under active refactoring for now
+* A HTML5 browser supporting canvas is required
+* Tested with Safari iOS8, Firefox 33, Chrome 38 and Internet Explorer 11
 
 ### Installation
 
-[Download the archive](https://github.com/SINTEF-9012/MapPaint/archive/master.zip) or use bower :
-
-```
-bower install leaflet-mappaint
-```
+[Download the archive](https://github.com/SINTEF-9012/MapPaint/archive/master.zip)
 
 You need to include the JavaScript file and the CSS file. Feel free to improve the CSS file.
 
@@ -37,6 +36,7 @@ leafletMap.MapPaint.disable();
 ```
 
 You can also use the control switch :
+
 ```javascript
 leafletMap.addControl(new MapPaint.SwitchControl());
 ```
@@ -49,6 +49,7 @@ By default the drawing is added to the map as a [L.ImageOverlay](http://leafletj
 leafletMap.MapPaint.saveMethod = function(image, bounds) {
 }
 ```
+
 __image__ is a PNG file as a base64 string
 
 Example: `"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAsMAAAIHCAYAAAB69VHgAAAgAElEQ…Gmc9yN5Rv"`
@@ -57,9 +58,9 @@ __bounds__ represents the [L.LatLngBounds](http://leafletjs.com/reference.html#l
 
 ### Acknowledgements
 
-This library is developed in context of the [BRIDGE](http://www.bridgeproject.eu/en) project.
-
-The icons are from the [material design icons](https://github.com/google/material-design-icons) project.
+* This library was developed in context of the [BRIDGE](http://www.bridgeproject.eu/en) project (European Union’s Seventh Framework Programme for research, technological development and demonstration under grant agreement no 261817).
+* The icons are from the [material design icons](https://github.com/google/material-design-icons) project.
+* The procedural pencil is inspired by [harmony](https://github.com/mrdoob/harmony).
 
 ### Licence
 

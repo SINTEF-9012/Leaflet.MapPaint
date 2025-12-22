@@ -1,38 +1,41 @@
 <!DOCTYPE html>
 
 <html lang="en">
+
 <head>
-    <meta charset="utf-8" />
-    <title>MapPaint</title>
-    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, target-densitydpi=device-dpi" />
+	<meta charset="utf-8" />
+	<title>MapPaint</title>
+	<meta name="viewport"
+		content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, target-densitydpi=device-dpi" />
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+		integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+		integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
-	<script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
-    <script src="dist/MapPaint.js"></script>
+	<script src="dist/MapPaint.js"></script>
 
-    <link rel="stylesheet" href="dist/MapPaint.css" type="text/css" />
+	<link rel="stylesheet" href="dist/MapPaint.css" type="text/css" />
 	<meta name="apple-mobile-web-app-capable" content="yes">
 </head>
+
 <body>
 	<div id="mappaint-map"></div>
 
 	<script>
-	var map = L.map("mappaint-map", {
-	    attributionControl: false,
-	    zoomControl: false
-	}).setView(new L.LatLng(59.901111, 10.752778), 14);
+		var map = L.map("mappaint-map", {
+			attributionControl: true,
+			zoomControl: false
+		}).setView(new L.LatLng(60.08, 10.65), 12);
 
-	L.tileLayer('http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.jpg', {
-		subdomains: ['a', 'b', 'c', 'd'],
-		minZoom: 3,
-	    detectRetina: true,
-	    maxNativeZoom: 17
-	}).addTo(map);
+		L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+		}).addTo(map);
 
-	map.MapPaint.enable();
+		map.MapPaint.enable();
 
-	map.addControl(new MapPaint.SwitchControl());
-	// L.control.zoom().addTo(map);
+		map.addControl(new MapPaint.SwitchControl());
+		// L.control.zoom().addTo(map);
 	</script>
 </body>
+
 </html>
